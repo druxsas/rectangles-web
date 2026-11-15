@@ -3,6 +3,13 @@
 import { Billboard, RoundedBox, Text } from "@react-three/drei";
 import type { ReactNode } from "react";
 import { NightShiftScreen } from "@/scenes/store/NightShift";
+import {
+  BoomboxModel,
+  CashRegisterModel,
+  CassettePlayerModel,
+  ShelfModel,
+  TelevisionModel,
+} from "@/scenes/store/models";
 import { useCheckout } from "@/stores/checkout";
 
 // Shared text defaults so every 3D label in the scene is tuned the same.
@@ -261,6 +268,10 @@ function MusicZone() {
 
       {/* Vinyl stack on the floor */}
       <Box pos={[-2.9, 0.4, 1.3]} size={[0.8, 0.8, 0.8]} color={COL.woodDark} />
+
+      {/* CC0 details — Poly Haven boombox + cassette player on the cabinet */}
+      <BoomboxModel position={[-0.7, 1.45, 0.3]} rotation={[0, -0.3, 0]} scale={1.4} />
+      <CassettePlayerModel position={[0.9, 1.5, 0.15]} rotation={[0, 0.3, 0]} scale={1.2} />
     </Group>
   );
 }
@@ -293,6 +304,10 @@ function ArcadeZone() {
       ))}
       {/* Cobalt rim light behind the screen */}
       <pointLight position={[0, 1.7, 0.6]} color={COL.screenCobalt} intensity={2.4} distance={5} />
+
+      {/* Retro CRT TV from the storyboard — stood on a small plinth beside the arcade */}
+      <Box pos={[1.6, 0.6, 0]} size={[1.2, 1.2, 0.9]} color={COL.woodDark} />
+      <TelevisionModel position={[1.6, 1.3, 0]} rotation={[0, -0.35, 0]} scale={0.55} />
     </Group>
   );
 }
@@ -369,6 +384,10 @@ function CounterZone() {
       <Box pos={[0.6, 1.19, 0.15]}  size={[1.1, 0.04, 0.35]} color={COL.signInk} />
       <Box pos={[0.6, 1.195, 0.14]} size={[1,   0.01, 0.3]}  color={COL.signBg} />
       <Box pos={[1.6, 1.19, 0.15]}  size={[0.3, 0.05, 0.22]} color={COL.signInk} />
+
+      {/* CC0 details — vintage cash register and a shelf against the back wall */}
+      <CashRegisterModel position={[1.6, 1.21, -0.15]} rotation={[0, -0.4, 0]} scale={0.3} />
+      <ShelfModel position={[-1.6, 1.25, -0.55]} rotation={[0, 0, 0]} scale={0.9} />
 
       {/* Cobalt glow from the screen */}
       <pointLight position={[-0.5, 1.72, 0.9]} color={COL.screenCobalt} intensity={1.6} distance={4} />
