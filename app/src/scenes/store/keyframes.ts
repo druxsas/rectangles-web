@@ -1,16 +1,16 @@
 /**
- * Camera keyframes for the Rectangle's store walkthrough.
+ * Camera keyframes — reworked to match the approved reference stills.
  *
- * Each keyframe represents one narrative stop from the brandbook §15
- * storyboard. The scroll-driven camera rig interpolates position and lookAt
- * between neighbors; the DOM overlay shows a matching title for each stop.
+ * Hero frame is the back wall interior: illuminated RECTANGLE'S wordmark
+ * above a wide counter with the vendor and iMac G3. Facade is the exterior
+ * approach; everything else is tight on the zone it names.
  *
- * Layout notes (world coords):
- *   Store box: 20 (X) × 8 (Y) × 14 (Z) centered on X/Z, floor at Y=0.
- *   - Skate: left wall (X = -10)
- *   - Music: right side (X = +8, Z ≈ -3)
- *   - Games: back-center (X ≈ +1, Z ≈ -6)  — moved out from behind Music
- *   - Counter + iMac: back-left (X = -5, Z = -6)
+ * Layout (world coords):
+ *   - Back wall at Z = -7 hosts the wordmark + counter + vendor + iMac.
+ *   - Left wall (X = -10): arcade cabinet + retro TV (Games).
+ *   - Right wall (X = +10): skate deck grid with cobalt backlight.
+ *   - Center merch tables with clothing display + vinyl crates.
+ *   - Floor speakers flank the counter.
  */
 
 export type Keyframe = {
@@ -27,57 +27,57 @@ export const KEYFRAMES: Keyframe[] = [
     id: "facade",
     title: "Facade",
     body: "Rectangle's — the storefront. Warm lamps bleed through the window onto dark concrete.",
-    position: [0, 4.2, 19],
+    position: [0, 4.2, 18],
     lookAt: [0, 4, 7],
     fov: 55,
   },
   {
     id: "entrance",
     title: "Entrance",
-    body: "Step inside. The corridor opens onto the four zones.",
-    position: [0, 1.7, 5],
-    lookAt: [0, 2.1, -3],
-    fov: 55,
+    body: "Step inside. The RECTANGLE'S sign glows at the back wall; the vendor is behind the counter.",
+    position: [0, 1.9, 5],
+    lookAt: [0, 2.5, -6.5],
+    fov: 58,
   },
   {
     id: "overview",
     title: "Explore",
-    body: "Skate, music, video games, retro computing — one shared system.",
-    position: [1, 3.4, 2],
-    lookAt: [0, 1.2, -5],
-    fov: 60,
+    body: "Skate, music, games, retro computing — one shared system.",
+    position: [2.5, 2.8, 2],
+    lookAt: [-1, 1.8, -5],
+    fov: 65,
   },
   {
     id: "skate",
     title: "Skate",
-    body: "Decks on the wall. Trucks, wheels and bearings on the workbench.",
-    position: [-7, 2.3, -1],
-    lookAt: [-9.4, 2.8, -2],
-    fov: 42,
+    body: "Deck wall backlit in cobalt. Pick a color.",
+    position: [6.5, 2.8, -1],
+    lookAt: [9.5, 3.2, -1.5],
+    fov: 50,
   },
   {
     id: "music",
     title: "Music",
-    body: "Grooves, speakers, formats. Rectangle's Sessions on vinyl.",
-    position: [5.5, 1.9, -2.5],
-    lookAt: [8, 1.5, -4],
-    fov: 42,
+    body: "Floor speakers flanking the counter; vinyl crates in the center.",
+    position: [-3.5, 2.0, -0.8],
+    lookAt: [-4.3, 1.5, -3.5],
+    fov: 50,
   },
   {
     id: "games",
     title: "Games",
-    body: "Arcade and consoles. Night Shift running on the cabinet in the back.",
-    position: [2.5, 1.7, -3.8],
-    lookAt: [1, 1.7, -6.3],
-    fov: 42,
+    body: "Arcade cabinet in the left bay. Night Shift running live.",
+    position: [-6.6, 1.9, -0.4],
+    lookAt: [-9, 1.7, -2],
+    fov: 45,
   },
   {
     id: "retro",
     title: "Retro Computing",
-    body: "Behind the counter, the iMac G3 — the store's hero object. Click it to shop.",
-    position: [-3.7, 1.7, -4.8],
-    lookAt: [-5.5, 1.7, -6],
-    fov: 32,
+    body: "Behind the counter, the iMac G3. Click it to shop.",
+    position: [-1.8, 1.9, -3.2],
+    lookAt: [-2.2, 1.6, -5.4],
+    fov: 38,
   },
 ];
 
