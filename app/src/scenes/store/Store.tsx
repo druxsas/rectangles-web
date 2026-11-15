@@ -2,6 +2,7 @@
 
 import { Billboard, RoundedBox, Text } from "@react-three/drei";
 import type { ReactNode } from "react";
+import { NightShiftScreen } from "@/scenes/store/NightShift";
 
 // Shared text defaults so every 3D label in the scene is tuned the same.
 const TEXT_DEFAULTS = {
@@ -126,25 +127,25 @@ function Shell() {
       {/* Floor (extends past facade to form a sidewalk) */}
       <mesh position={[0, 0, 3.5]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[20, 21]} />
-        <meshStandardMaterial color={COL.concreteFloor} roughness={0.95} />
+        <meshStandardMaterial color={COL.concreteFloor} roughness={0.9} metalness={0.05} />
       </mesh>
       {/* Ceiling */}
-      <mesh position={[0, 8, 0]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 8, 0]} rotation={[Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[20, 14]} />
         <meshStandardMaterial color={COL.ceiling} roughness={1} />
       </mesh>
       {/* Back wall */}
-      <mesh position={[0, 4, -7]}>
+      <mesh position={[0, 4, -7]} receiveShadow>
         <planeGeometry args={[20, 8]} />
         <meshStandardMaterial color={COL.concreteWall} roughness={0.85} />
       </mesh>
       {/* Left wall (skate wall) */}
-      <mesh position={[-10, 4, 0]} rotation={[0, Math.PI / 2, 0]}>
+      <mesh position={[-10, 4, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[14, 8]} />
         <meshStandardMaterial color={COL.concreteWall} roughness={0.85} />
       </mesh>
       {/* Right wall */}
-      <mesh position={[10, 4, 0]} rotation={[0, -Math.PI / 2, 0]}>
+      <mesh position={[10, 4, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[14, 8]} />
         <meshStandardMaterial color={COL.concreteWall} roughness={0.85} />
       </mesh>
@@ -153,23 +154,37 @@ function Shell() {
       <Box pos={[0, 6.8, 7]}   size={[20, 2.4, 0.3]} color={COL.signBg} />
       <Box pos={[-9.3, 3, 7]}  size={[1.4, 6, 0.3]}  color={COL.signBg} />
       <Box pos={[9.3, 3, 7]}   size={[1.4, 6, 0.3]}  color={COL.signBg} />
-      {/* Rectangle's wordmark on the facade — emissive so it glows like
-          neon-ish signage even in the dark store. */}
+      {/* Backlit sign plate — flat matte-white panel that catches the lamps.
+          Sits a hair in front of the awning strip so there's no z-fighting. */}
+      <mesh position={[-1.2, 6.8, 7.21]}>
+        <planeGeometry args={[12, 1.6]} />
+        <meshBasicMaterial color="#f7f7f3" toneMapped={false} />
+      </mesh>
+      {/* Rectangle's wordmark — cut-out in the sign (ink on the white plate) */}
       <Text
-        position={[-1.2, 6.8, 7.18]}
-        fontSize={1.5}
-        color={COL.signInk}
-        outlineWidth={0.02}
-        outlineColor="#000000"
-        fontWeight={700}
-        material-toneMapped={false}
+        position={[-1.2, 6.8, 7.22]}
+        fontSize={1.4}
+        color="#0a0b0d"
         {...TEXT_DEFAULTS}
       >
         RECTANGLE&apos;S
       </Text>
-      {/* Warm halo behind the facade sign so the surrounding panel is lit */}
-      <pointLight position={[-1, 6.8, 7.8]} color="#ffb070" intensity={3} distance={8} decay={1.4} />
-      <pointLight position={[5.5, 6.8, 7.8]} color="#ffb070" intensity={2} distance={6} decay={1.4} />
+      {/* Framed-mark glyph next to the wordmark, drawn on the white plate */}
+      <mesh position={[5.3, 6.8, 7.22]}>
+        <planeGeometry args={[2.4, 1]} />
+        <meshBasicMaterial color="#0a0b0d" toneMapped={false} />
+      </mesh>
+      <Text
+        position={[5.3, 6.8, 7.23]}
+        fontSize={0.42}
+        color="#f7f7f3"
+        {...TEXT_DEFAULTS}
+      >
+        R / 01
+      </Text>
+      {/* Warm halo so the sign reads like it's lit from above */}
+      <pointLight position={[-1, 7.2, 8]} color="#ffbc7a" intensity={3.2} distance={9} decay={1.4} />
+      <pointLight position={[5.5, 7.2, 8]} color="#ffbc7a" intensity={2.4} distance={7} decay={1.4} />
       {/* Framed-mark rectangle (brandbook variant B) — four edges, no fill */}
       <Group pos={[5.5, 6.8, 7.17]}>
         <Box pos={[0, 0.43, 0]}   size={[2.4, 0.04, 0.02]} color={COL.signInk} />
@@ -260,16 +275,8 @@ function ArcadeZone() {
       {/* Marquee */}
       <Box pos={[0, 2.35, 0.1]} size={[1.5, 0.35, 0.8]} color={COL.signBg} />
       <Box pos={[0, 2.35, 0.51]} size={[1.3, 0.22, 0.01]} color={COL.signInk} emissive={COL.signInk} emissiveIntensity={0.3} />
-      {/* Screen (emissive — gets its own light below) */}
-      <mesh position={[0, 1.7, 0.51]}>
-        <planeGeometry args={[1.2, 0.9]} />
-        <meshStandardMaterial
-          color={COL.screenCobalt}
-          emissive={COL.screenCobalt}
-          emissiveIntensity={1.4}
-          roughness={0.3}
-        />
-      </mesh>
+      {/* Screen — Night Shift pixel-art game running live */}
+      <NightShiftScreen position={[0, 1.7, 0.51]} width={1.2} height={0.9} />
       {/* Control deck */}
       <Box pos={[0, 1.08, 0.57]} size={[1.4, 0.08, 0.5]} color={COL.signBg} />
       {/* Joystick + buttons (tiny cylinders/box) */}
@@ -300,14 +307,22 @@ function CounterZone() {
       {/* Counter top */}
       <Box pos={[0, 1.13, 0]} size={[4.1, 0.08, 1.3]} color={COL.counterTop} roughness={0.5} />
 
-      {/* iMac G3 — rounded teardrop body approximated with RoundedBox */}
-      <RoundedBox args={[0.95, 1, 1.05]} radius={0.28} smoothness={6} position={[-0.5, 1.72, -0.05]} castShadow>
-        <meshStandardMaterial
+      {/* iMac G3 — rounded teardrop body approximated with RoundedBox.
+          Physical material with transmission gives the iconic Bondi-blue
+          translucent shell. */}
+      <RoundedBox args={[0.95, 1, 1.05]} radius={0.28} smoothness={6} position={[-0.5, 1.72, -0.05]} castShadow receiveShadow>
+        <meshPhysicalMaterial
           color={COL.imacBody}
-          roughness={0.35}
-          metalness={0.1}
+          roughness={0.25}
+          metalness={0.05}
+          transmission={0.55}
+          thickness={0.6}
+          ior={1.4}
+          attenuationColor={COL.imacBody}
+          attenuationDistance={1.4}
+          clearcoat={0.3}
+          clearcoatRoughness={0.3}
           transparent
-          opacity={0.78}
         />
       </RoundedBox>
       {/* iMac rear bulge (opaque) */}

@@ -52,8 +52,24 @@ export function Lighting() {
       <HangingLamp position={[-3, 6.6, -3]} />
       <HangingLamp position={[4, 6.6, -3]} />
 
-      {/* Key fill from the front-right for shape and silhouette */}
-      <directionalLight position={[6, 7, 8]} intensity={0.5} color="#f1dfc6" />
+      {/* Key fill with shadows. Only one directional casts shadows to
+          keep the perf budget sane — other lights contribute brightness
+          but not shadow passes. */}
+      <directionalLight
+        position={[6, 9, 6]}
+        intensity={0.7}
+        color="#f1dfc6"
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-near={0.5}
+        shadow-camera-far={30}
+        shadow-camera-left={-12}
+        shadow-camera-right={12}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-2}
+        shadow-bias={-0.0005}
+      />
 
       {/* Soft sidewalk + facade fill from the viewer's side */}
       <directionalLight position={[0, 5, 14]} intensity={0.6} color="#8bb3e0" />
