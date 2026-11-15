@@ -6,7 +6,7 @@ import { SmokeTestScene } from "@/scenes/SmokeTestScene";
 
 export function SceneCanvas() {
   return (
-    <div className="fixed inset-0 -z-10">
+    <div className="fixed inset-0 z-0">
       <Canvas
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: false }}

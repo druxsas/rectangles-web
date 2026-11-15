@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <>
       <SceneCanvas />
-      <main className="relative flex-1 flex flex-col justify-between p-6 md:p-12">
+      <main className="relative z-10 flex-1 flex flex-col justify-between p-6 md:p-12 pointer-events-none">
         <header className="flex items-center justify-between">
           <span className="font-display text-2xl tracking-tight font-black uppercase">
             Rectangle&apos;s

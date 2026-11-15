@@ -71,6 +71,12 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+body {
+  /* El Canvas R3F pinta su propio background; dejamos el body transparente
+     para que el 3D se vea a través. */
+  background: transparent;
+}
+
 /* Respetar reducción de motion — brandbook § 18 */
 @media (prefers-reduced-motion: reduce) {
   *,
