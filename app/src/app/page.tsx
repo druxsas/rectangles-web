@@ -1,37 +1,36 @@
 import { SceneCanvas } from "@/canvas/SceneCanvas";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ScrollProgress, ScrollSections } from "@/components/scroll-sections";
 
 export default function Home() {
   return (
     <>
+      {/* 3D world sits behind everything */}
       <SceneCanvas />
-      <main className="relative z-10 flex-1 flex flex-col justify-between p-6 md:p-12 pointer-events-none">
-        <header className="flex items-center justify-between">
-          <span className="font-display text-heading-lg tracking-tight font-black uppercase">
-            Rectangle&apos;s
-          </span>
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-mono-sm text-fg-muted uppercase hidden sm:inline">
-              V0.1 · MVP
-            </span>
-            <ThemeToggle />
-          </div>
-        </header>
 
-        <section className="max-w-3xl">
-          <h1 className="font-display font-black uppercase tracking-tight text-display-lg md:text-display-xl">
-            Cultures that connect.
-          </h1>
-          <p className="mt-6 max-w-md text-fg-secondary">
-            Skate, music, video games, and retro computing. One shared identity,
-            four ways to take part.
-          </p>
-        </section>
+      {/* Fixed way-finder */}
+      <ScrollProgress />
 
-        <footer className="font-mono text-mono-sm text-fg-muted uppercase">
-          Smoke test · scroll and universe next
-        </footer>
+      {/* Persistent header — wordmark only. The home experience is cinematic
+          and theme-independent; the theme toggle lives on /styleguide where
+          UI chrome actually benefits from it. */}
+      <header className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-6 md:px-12 py-4 pointer-events-none">
+        <span className="font-display text-heading-md font-black uppercase tracking-tight text-paper pointer-events-auto">
+          Rectangle&apos;s
+        </span>
+        <span className="font-mono text-mono-sm uppercase hidden sm:inline" style={{ color: "#8e9196" }}>
+          V0.1 · MVP
+        </span>
+      </header>
+
+      {/* Scroll driver — seven 100vh slots, one per camera keyframe */}
+      <main className="relative z-10 pointer-events-none">
+        <ScrollSections />
       </main>
+
+      {/* Final hint */}
+      <footer className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 font-mono text-mono-sm uppercase pointer-events-none" style={{ color: "#8e9196" }}>
+        Scroll to walk through
+      </footer>
     </>
   );
 }
