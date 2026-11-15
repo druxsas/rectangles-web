@@ -5,13 +5,12 @@
  * storyboard. The scroll-driven camera rig interpolates position and lookAt
  * between neighbors; the DOM overlay shows a matching title for each stop.
  *
- * Framings are tight: the hero object of each zone fills the frame so the
- * primitives read as the thing they are, not as generic boxes.
- *
- * Coordinate system:
- *   - +X: right  -X: left (skate wall)
- *   - +Y: up
- *   - +Z: toward the viewer (+Z = outside the facade, -Z = back wall)
+ * Layout notes (world coords):
+ *   Store box: 20 (X) × 8 (Y) × 14 (Z) centered on X/Z, floor at Y=0.
+ *   - Skate: left wall (X = -10)
+ *   - Music: right side (X = +8, Z ≈ -3)
+ *   - Games: back-center (X ≈ +1, Z ≈ -6)  — moved out from behind Music
+ *   - Counter + iMac: back-left (X = -5, Z = -6)
  */
 
 export type Keyframe = {
@@ -28,9 +27,9 @@ export const KEYFRAMES: Keyframe[] = [
     id: "facade",
     title: "Facade",
     body: "Rectangle's — the storefront. Warm lamps bleed through the window onto dark concrete.",
-    position: [0, 3.4, 11.5],
-    lookAt: [0, 5.2, 7],
-    fov: 42,
+    position: [0, 4.2, 19],
+    lookAt: [0, 4, 7],
+    fov: 55,
   },
   {
     id: "entrance",
@@ -66,16 +65,16 @@ export const KEYFRAMES: Keyframe[] = [
   },
   {
     id: "games",
-    title: "Night Shift",
-    body: "Pixel light on dark concrete. One more game.",
-    position: [6.6, 1.65, -5.2],
-    lookAt: [7.5, 1.7, -6.5],
-    fov: 36,
+    title: "Games",
+    body: "Arcade and consoles. Night Shift running on the cabinet in the back.",
+    position: [2.5, 1.7, -3.8],
+    lookAt: [1, 1.7, -6.3],
+    fov: 42,
   },
   {
     id: "retro",
     title: "Retro Computing",
-    body: "Behind the counter, the iMac G3 — the store's hero object. Click it to start the demo checkout.",
+    body: "Behind the counter, the iMac G3 — the store's hero object. Click it to shop.",
     position: [-3.7, 1.7, -4.8],
     lookAt: [-5.5, 1.7, -6],
     fov: 32,

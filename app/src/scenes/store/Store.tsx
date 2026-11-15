@@ -266,11 +266,11 @@ function MusicZone() {
 }
 
 // ================================================================
-// Arcade / games zone — back-right
+// Games — arcade cabinet at back-center (out of the way of Music)
 // ================================================================
 function ArcadeZone() {
   return (
-    <Group pos={[7.5, 0, -6.5]}>
+    <Group pos={[1, 0, -6.3]}>
       {/* Cabinet body */}
       <Box pos={[0, 1.1, 0]} size={[1.6, 2.2, 1]} color={COL.arcadeFrame} roughness={0.8} />
       {/* Marquee */}
@@ -392,7 +392,7 @@ export function Store() {
           they sit above the zone fixtures regardless of composition. */}
       <ZoneLabel position={[-8.3, 5, -2.5]} text="01 SKATE" />
       <ZoneLabel position={[8, 4, -4]}      text="02 MUSIC" />
-      <ZoneLabel position={[7.5, 3.5, -5.5]} text="03 NIGHT SHIFT" size={0.32} />
+      <ZoneLabel position={[1, 3.8, -6]}    text="03 GAMES" />
       <ZoneLabel position={[-5, 2.8, -5.5]} text="04 RETRO" />
     </group>
   );
