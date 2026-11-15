@@ -3,6 +3,7 @@
 import { Billboard, RoundedBox, Text } from "@react-three/drei";
 import type { ReactNode } from "react";
 import { NightShiftScreen } from "@/scenes/store/NightShift";
+import { useCheckout } from "@/stores/checkout";
 
 // Shared text defaults so every 3D label in the scene is tuned the same.
 const TEXT_DEFAULTS = {
@@ -297,9 +298,11 @@ function ArcadeZone() {
 }
 
 // ================================================================
-// Counter + iMac G3 — back-left (hero object)
+// Counter + iMac G3 — back-left (hero object + checkout trigger)
 // ================================================================
 function CounterZone() {
+  const openCheckout = useCheckout((s) => s.open);
+
   return (
     <Group pos={[-5, 0, -6]}>
       {/* Counter base */}
@@ -308,9 +311,27 @@ function CounterZone() {
       <Box pos={[0, 1.13, 0]} size={[4.1, 0.08, 1.3]} color={COL.counterTop} roughness={0.5} />
 
       {/* iMac G3 — rounded teardrop body approximated with RoundedBox.
-          Physical material with transmission gives the iconic Bondi-blue
-          translucent shell. */}
-      <RoundedBox args={[0.95, 1, 1.05]} radius={0.28} smoothness={6} position={[-0.5, 1.72, -0.05]} castShadow receiveShadow>
+          Clickable: opens the demo checkout overlay. onPointerOver sets
+          the cursor so visitors notice it's interactive. */}
+      <RoundedBox
+        args={[0.95, 1, 1.05]}
+        radius={0.28}
+        smoothness={6}
+        position={[-0.5, 1.72, -0.05]}
+        castShadow
+        receiveShadow
+        onClick={(e) => {
+          e.stopPropagation();
+          openCheckout();
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "";
+        }}
+      >
         <meshPhysicalMaterial
           color={COL.imacBody}
           roughness={0.25}

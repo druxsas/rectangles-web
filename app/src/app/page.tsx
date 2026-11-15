@@ -1,4 +1,5 @@
 import { SceneCanvas } from "@/canvas/SceneCanvas";
+import { CheckoutOverlay } from "@/components/checkout-overlay";
 import { ScrollProgress, ScrollSections } from "@/components/scroll-sections";
 import { SiteNav } from "@/components/site-nav";
 
@@ -24,8 +25,11 @@ export default function Home() {
         className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 font-mono text-mono-sm uppercase pointer-events-none"
         style={{ color: "#8e9196" }}
       >
-        Scroll to walk through
+        Scroll to walk through · click the iMac G3 to try checkout
       </footer>
+
+      {/* Click-triggered demo checkout — never appears on the scroll path */}
+      <CheckoutOverlay />
     </>
   );
 }
