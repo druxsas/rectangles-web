@@ -1,83 +1,103 @@
 @import "tailwindcss";
+@import "../styles/tokens.generated.css";
 
 /* --------------------------------------------------------------------------
- * Rectangle's — Design tokens (brandbook V0.1)
+ * Rectangle's — Tailwind v4 theme bridge.
+ * Maps auto-generated `--theme-*` tokens into short, utility-friendly names
+ * that Tailwind exposes as `bg-*`, `text-*`, `border-*`, `font-*`, etc.
+ * Source of truth: tokens/*.json (rebuild with `pnpm tokens:build`).
  * -------------------------------------------------------------------------- */
 
-:root {
-  /* Color — base */
-  --color-paper: #f7f7f3;
-  --color-ink: #17191b;
-  --color-cobalt: #165dfa;
-  --color-muted: #565c62;
-  --color-line: #d6d8d5;
-  --color-surface: #ffffff;
-
-  /* Color — semantic */
-  --color-bg: var(--color-ink);
-  --color-fg: var(--color-paper);
-  --color-action-bg: var(--color-ink);
-  --color-action-fg: #ffffff;
-  --color-focus: var(--color-cobalt);
-  --color-accent: var(--color-cobalt);
-
-  /* Spacing — base 4px */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-12: 48px;
-  --space-16: 64px;
-  --space-24: 96px;
-
-  /* Radius */
-  --radius-sm: 2px;
-  --radius-md: 4px;
-
-  /* Border */
-  --border-thin: 1px;
-
-  /* Control */
-  --control-min-h: 44px;
-
-  /* Motion */
-  --motion-fast: 140ms;
-  --motion-base: 240ms;
-  --motion-panel: 320ms;
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
 @theme inline {
-  --color-paper: var(--color-paper);
-  --color-ink: var(--color-ink);
-  --color-cobalt: var(--color-cobalt);
-  --color-muted: var(--color-muted);
-  --color-line: var(--color-line);
-  --color-surface: var(--color-surface);
-  --color-background: var(--color-bg);
-  --color-foreground: var(--color-fg);
+  /* Surfaces */
+  --color-canvas:          var(--theme-bg-canvas);
+  --color-surface:         var(--theme-bg-surface);
+  --color-surface-muted:   var(--theme-bg-muted);
+  --color-surface-inverse: var(--theme-bg-inverse);
 
-  --font-display: var(--font-display);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
+  /* Foreground */
+  --color-fg:             var(--theme-fg-primary);
+  --color-fg-secondary:   var(--theme-fg-secondary);
+  --color-fg-muted:       var(--theme-fg-muted);
+  --color-fg-inverse:     var(--theme-fg-inverse);
+  --color-fg-on-accent:   var(--theme-fg-on-accent);
+
+  /* Lines */
+  --color-line:           var(--theme-line-default);
+  --color-line-strong:    var(--theme-line-strong);
+
+  /* Accent (Cobalt) */
+  --color-accent:          var(--theme-accent-default);
+  --color-accent-emphasis: var(--theme-accent-emphasis);
+  --color-accent-muted:    var(--theme-accent-muted);
+
+  /* Action / CTA */
+  --color-action-bg:          var(--theme-action-bg);
+  --color-action-fg:          var(--theme-action-fg);
+  --color-action-bg-hover:    var(--theme-action-bg-hover);
+  --color-action-bg-pressed:  var(--theme-action-bg-pressed);
+  --color-action-bg-disabled: var(--theme-action-bg-disabled);
+  --color-action-fg-disabled: var(--theme-action-fg-disabled);
+
+  /* Focus */
+  --color-focus: var(--theme-focus-ring);
+
+  /* Status */
+  --color-success:    var(--theme-status-success);
+  --color-success-bg: var(--theme-status-success-bg);
+  --color-warning:    var(--theme-status-warning);
+  --color-warning-bg: var(--theme-status-warning-bg);
+  --color-error:      var(--theme-status-error);
+  --color-error-bg:   var(--theme-status-error-bg);
+  --color-info:       var(--theme-status-info);
+  --color-info-bg:    var(--theme-status-info-bg);
+
+  /* Typography — font families */
+  --font-display: var(--font-family-display);
+  --font-sans:    var(--font-family-sans);
+  --font-mono:    var(--font-family-mono);
+
+  /* Typography — text sizes (pairs size + line-height for Tailwind v4) */
+  --text-display-xl:              var(--font-size-display-xl);
+  --text-display-xl--line-height: var(--font-line-height-display);
+  --text-display-lg:              var(--font-size-display-lg);
+  --text-display-lg--line-height: var(--font-line-height-display);
+  --text-display-md:              var(--font-size-display-md);
+  --text-display-md--line-height: var(--font-line-height-display);
+  --text-heading-lg:              var(--font-size-heading-lg);
+  --text-heading-lg--line-height: var(--font-line-height-heading);
+  --text-heading-md:              var(--font-size-heading-md);
+  --text-heading-md--line-height: var(--font-line-height-heading);
+  --text-heading-sm:              var(--font-size-heading-sm);
+  --text-heading-sm--line-height: var(--font-line-height-heading);
+  --text-body-lg:                 var(--font-size-body-lg);
+  --text-body-lg--line-height:    var(--font-line-height-body);
+  --text-body-md:                 var(--font-size-body-md);
+  --text-body-md--line-height:    var(--font-line-height-body);
+  --text-body-sm:                 var(--font-size-body-sm);
+  --text-body-sm--line-height:    var(--font-line-height-body);
+  --text-mono-sm:                 var(--font-size-mono-sm);
+  --text-mono-sm--line-height:    var(--font-line-height-tight);
 }
 
 html,
 body {
-  background: var(--color-bg);
-  color: var(--color-fg);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  color: var(--theme-fg-primary);
+  font-family: var(--font-family-sans), system-ui, sans-serif;
+  background: var(--theme-bg-canvas);
+  transition:
+    background-color var(--duration-panel) var(--easing-standard),
+    color var(--duration-panel) var(--easing-standard);
 }
 
-body {
-  /* El Canvas R3F pinta su propio background; dejamos el body transparente
-     para que el 3D se vea a través. */
-  background: transparent;
+/* Universal visible focus — brandbook §16 */
+*:focus-visible {
+  outline: var(--stroke-medium) solid var(--theme-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
 }
 
-/* Respetar reducción de motion — brandbook § 18 */
+/* Honor reduced motion — brandbook §18 */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

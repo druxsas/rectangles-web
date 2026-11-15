@@ -1,0 +1,16 @@
+{
+  "duration": {
+    "instant": { "$type": "duration", "$value": "0ms" },
+    "fast":    { "$type": "duration", "$value": "140ms", "$description": "Brandbook: 120-180ms for hover and selection" },
+    "base":    { "$type": "duration", "$value": "240ms", "$description": "Default transition" },
+    "panel":   { "$type": "duration", "$value": "320ms", "$description": "Brandbook: 220-320ms for panels" },
+    "camera":  { "$type": "duration", "$value": "800ms", "$description": "3D camera moves between points of interest" }
+  },
+  "easing": {
+    "linear":      { "$type": "cubicBezier", "$value": [0, 0, 1, 1] },
+    "standard":    { "$type": "cubicBezier", "$value": [0.2, 0, 0, 1],       "$description": "Default UI easing (Material-like)" },
+    "out":         { "$type": "cubicBezier", "$value": [0.22, 1, 0.36, 1],   "$description": "Smooth deceleration for incoming elements" },
+    "in":          { "$type": "cubicBezier", "$value": [0.5, 0, 0.75, 0] },
+    "camera-ease": { "$type": "cubicBezier", "$value": [0.65, 0, 0.35, 1],   "$description": "Cinematic camera moves — soft start and end" }
+  }
+}

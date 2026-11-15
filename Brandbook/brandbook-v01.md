@@ -1,119 +1,119 @@
 # Rectangle's — Brandbook V0.1
 
-> Versión Markdown del brandbook PDF. Conserva su contenido y las referencias visuales; los esquemas gráficos se expresan mediante texto e imágenes.
+> Markdown version of the brandbook PDF. Keeps the same content and visual references; graphic schematics are expressed through text and images.
 
-## 01 / Dirección de marca
+## 01 / Brand direction
 
-**CULTURAS QUE CONECTAN.**
+**CULTURES THAT CONNECT.**
 
 ### BRANDBOOK
 
 ### RECTANGLE'S / V0.1
 
-Skate. Música. Videojuegos. Computadoras retro.
-Una identidad compartida, cuatro maneras de participar.
+Skate. Music. Video games. Retro computers.
+One shared identity, four ways to take part.
 
-Proyecto digital ficticio para portfolio.
-Dirección conceptual de Daniel Rolón.
-Edición de revisión / 15 noviembre 2026.
+Fictional digital project for portfolio.
+Concept direction by Daniel Rolón.
+Revision edition / November 15, 2026.
 
-## 02 / Cómo usar esta guía
+## 02 / How to use this guide
 
-**UNA BASE PARA DISEÑAR.**
+**A FOUNDATION FOR DESIGN.**
 
-La última iteración visual se convierte en criterios de uso y propuestas de sistema.
+The latest visual iteration becomes usage criteria and system proposals.
 
-### APROBADO
+### APPROVED
 
-Wordmark legible y condensado. Variante con rectángulo separado y variante enmarcada. Bolsas y tablas como aplicaciones de referencia. Fondos casi blancos, azul puntual y CTA simples.
+Legible, condensed wordmark. Variant with a separate rectangle and a framed variant. Shopping bags and skateboards as reference applications. Near-white backgrounds, pointed use of blue, and simple CTAs.
 
-### PROPUESTO
+### PROPOSED
 
-Valores HEX, escalas tipográficas, medidas de protección, tokens y estados digitales. Son una base de trabajo para validar en aplicaciones reales.
+HEX values, type scales, protection measurements, tokens, and digital states. These are a working foundation to validate in real applications.
 
-### POR PRODUCIR
+### TO BE PRODUCED
 
-Logo vectorial maestro, selección y licencia de fuentes, artes finales, fotografías o renders de producto y pruebas de interfaz. Los mockups generados no sustituyen estos originales.
+Master vector logo, font selection and licensing, final artwork, product photography or renders, and interface tests. Generated mockups do not replace these originals.
 
-Mapa de lectura: estrategia 03-04 / identidad 05-09 / lenguaje visual 10 / colecciones 11-14 / experiencia y sistema 15-18 / usos y producción 19-20.
+Reading map: strategy 03-04 / identity 05-09 / visual language 10 / collections 11-14 / experience and system 15-18 / usage and production 19-20.
 
-## 03 / Plataforma
+## 03 / Platform
 
-**UN LUGAR PARA HACERLO TUYO.**
+**A PLACE TO MAKE IT YOUR OWN.**
 
-Rectangle's reúne objetos, actividades y personas alrededor del juego, la música y el movimiento. La tecnología retro aporta memoria; la experiencia digital invita a descubrir nuevas conexiones.
+Rectangle's brings together objects, activities, and people around play, music, and movement. Retro technology contributes memory; the digital experience invites discovery of new connections.
 
-### PROPÓSITO
+### PURPOSE
 
-Crear un espacio donde explorar gustos, compartir referencias y expresar una identidad propia.
+Create a space to explore tastes, share references, and express a personal identity.
 
-### PROMESA
+### PROMISE
 
-Cada visita ofrece algo para jugar, escuchar, descubrir o personalizar.
+Every visit offers something to play, listen to, discover, or customize.
 
-### POSICIONAMIENTO
+### POSITIONING
 
-Tienda cultural independiente y experiencia digital inmersiva. Curada, cercana y visualmente cuidada.
+Independent cultural store and immersive digital experience. Curated, approachable, and visually considered.
 
-## 04 / Personalidad y voz
+## 04 / Personality and voice
 
-**ENTENDIDA. CERCANA. CURIOSA.**
+**KNOWING. APPROACHABLE. CURIOUS.**
 
-| Rasgo | Cómo se expresa | Ejemplo de voz |
+| Trait | How it shows up | Voice example |
 | --- | --- | --- |
-| Curiosa | Invita a probar sin exigir conocimientos previos. | "Mirá qué hay por acá." |
-| Entendida | Explica piezas, formatos y compatibilidad. | "Incluye tabla, trucks, ruedas y rulemanes." |
-| Cercana | Usa frases breves y un tono natural. | "Armá tu setup." |
-| Lúdica | Celebra descubrimientos y pequeñas acciones. | "Una partida más." |
-| Clara | Nombra la acción y explicita la demostración. | "Finalizar compra de prueba." |
+| Curious | Invites people to try without demanding prior knowledge. | "See what's over here." |
+| Knowing | Explains parts, formats, and compatibility. | "Includes deck, trucks, wheels, and bearings." |
+| Approachable | Uses short phrases and a natural tone. | "Build your setup." |
+| Playful | Celebrates discoveries and small actions. | "One more game." |
+| Clear | Names the action and makes the demo explicit. | "Complete demo checkout." |
 
-Convención propuesta: interfaz en español rioplatense; campañas y prendas pueden usar frases cortas en inglés. Evitar mezclar idiomas dentro de un mismo flujo. El caso de portfolio podrá tener su versión en inglés.
+Proposed convention: interface in English; campaigns and merchandise may use short phrases in alternate languages. Avoid mixing languages within a single flow. The portfolio case may have its localized version.
 
-## 05 / Identidad
+## 05 / Identity
 
-**DOS VARIANTES. UNA MARCA.**
+**TWO VARIANTS. ONE BRAND.**
 
-La forma aprobada está en los mockups. Los esquemas inferiores son aproximaciones para explicar su construcción.
+The approved form is shown in the mockups. The schematics below are approximations that explain how it is built.
 
-**Muestras:** firma en positivo sobre blanco y en negativo sobre carbón.
+**Samples:** signature in positive on white, and in negative on carbon.
 
-### A / MARCA + RECTÁNGULO
+### A / MARK + RECTANGLE
 
-Encabezados, pies de página, señalética y piezas editoriales. Conservar la relación entre palabra, espacio y símbolo.
+Headers, footers, signage, and editorial pieces. Preserve the relationship between word, space, and symbol.
 
 ### RECTANGLE'S
 
-### B / MARCA ENMARCADA
+### B / FRAMED MARK
 
-Bolsas, prendas, tablas, etiquetas y packaging. El nombre vive dentro de un rectángulo contrastante.
+Bags, garments, decks, labels, and packaging. The name lives inside a contrasting rectangle.
 
-Nombre visible: Rectangle's. Identificador de carpeta y repositorio: rectangles. No crear versiones distintas del nombre para cada colección.
+Visible name: Rectangle's. Folder and repository identifier: rectangles. Do not create different versions of the name for each collection.
 
-## 06 / Construcción y protección
+## 06 / Construction and protection
 
-**EL MARCO NECESITA AIRE.**
+**THE FRAME NEEDS AIR.**
 
-Reglas preliminares a confirmar cuando se dibuje el archivo vectorial maestro.
+Preliminary rules, to be confirmed when the master vector file is drawn.
 
 ### RECTANGLE'S
 
 x
 
-x = 1/2 de la altura de las mayúsculas
+x = 1/2 of cap height
 
-Reservar al menos x alrededor del conjunto. No invadir esta zona con bordes, textos o ilustraciones.
+Reserve at least x around the lockup. Do not invade this area with borders, text, or illustrations.
 
-El símbolo es un rectángulo horizontal claramente alargado. Proporción de partida: 3:1 a 4:1. La marca enmarcada se ajusta al nombre y su margen interno.
+The symbol is a clearly elongated horizontal rectangle. Starting ratio: 3:1 to 4:1. The framed mark adjusts to the name and its internal margin.
 
-Umbrales para probar: 160 px de ancho para la firma completa; 140 px para la enmarcada. Por debajo, revisar legibilidad caso a caso. El símbolo solo requiere contexto de marca.
+Thresholds to test: 160 px wide for the full signature; 140 px for the framed one. Below those, review legibility case by case. The symbol alone requires brand context.
 
-No estirar el wordmark para que entre. En las tablas puede girarse el conjunto completo, manteniendo sus proporciones.
+Do not stretch the wordmark to fit. On decks, the full lockup may be rotated, keeping its proportions.
 
 ## 07 / Color
 
-**NEUTROS PRIMERO. AZUL PUNTUAL.**
+**NEUTRALS FIRST. POINTED BLUE.**
 
-Paleta digital propuesta a partir de las láminas; no es una extracción exacta de las imágenes.
+Digital palette proposed from the plates; not a direct extraction from the images.
 
 ### PAPER
 
@@ -137,53 +137,53 @@ Paleta digital propuesta a partir de las láminas; no es una extracción exacta 
 
 ### BASE
 
-Casi blanco para superficies. Carbón para textos, firmas y CTA. Mantener una lectura nítida.
+Near-white for surfaces. Carbon for text, signatures, and CTAs. Keep a crisp read.
 
-### ACENTO
+### ACCENT
 
-Azul en etiquetas, selección, foco y detalles gráficos. Orientación visual: 5-10% de una pieza, no una cuota rígida.
+Blue on tags, selection, focus, and graphic details. Visual target: 5-10% of a piece, not a strict quota.
 
 ### MATERIAL
 
-Kraft, madera y ámbar provienen de objetos e iluminación. No convertir toda la interfaz en un fondo beige.
+Kraft, wood, and amber come from objects and lighting. Do not turn the whole interface into a beige surface.
 
-## 08 / Tipografía
+## 08 / Typography
 
-**FUERZA EN EL TÍTULO. CLARIDAD AL LEER.**
+**STRENGTH IN THE HEADLINE. CLARITY WHEN READING.**
 
-Los mockups muestran una dirección tipográfica, no una fuente identificada. La familia final debe seleccionarse y probarse antes de fijar los tokens.
+The mockups show a typographic direction, not an identified font. The final family must be selected and tested before locking the tokens.
 
 ### PLAY. LISTEN. RIDE.
 
-Display / grotesca condensada y pesada. Frases cortas, gran contraste de escala. Evitar párrafos en mayúsculas.
+Display / heavy condensed grotesque. Short phrases, strong scale contrast. Avoid all-caps paragraphs.
 
 Rectangle's Complete
 
-Armá tu combinación y explorá cada pieza.
+Build your combination and explore every piece.
 
 R / 01  •  SKATE COLLECTION
 
-| Rol | Escala inicial / tamaño-interlínea | Uso |
+| Role | Initial scale / size-leading | Use |
 | --- | --- | --- |
-| Display | 64/64 escritorio; 40/42 móvil | Campañas y titulares |
-| Título / subtítulo | 32/36 y 24/30 | Secciones y fichas |
-| Cuerpo / auxiliar | 16/24 y 14/20 | Contenido y controles |
+| Display | 64/64 desktop; 40/42 mobile | Campaigns and headlines |
+| Heading / subheading | 32/36 and 24/30 | Sections and product cards |
+| Body / auxiliary | 16/24 and 14/20 | Content and controls |
 
-## 09 / Jerarquía
+## 09 / Hierarchy
 
-**UN SISTEMA QUE RESPIRA.**
+**A SYSTEM THAT BREATHES.**
 
-### COMPOSICIÓN
+### COMPOSITION
 
-Grilla editorial. Alinear titulares, fotos, tarjetas y etiquetas. Un foco principal por pieza; evitar llenar todos los espacios.
+Editorial grid. Align headlines, photos, cards, and tags. One primary focus per piece; avoid filling every space.
 
-### ESPACIO
+### SPACE
 
-Base propuesta de 4 px: 4, 8, 12, 16, 24, 32, 48, 64 y 96. En interfaz, empezar con 16-24 px dentro de componentes.
+Proposed 4 px base: 4, 8, 12, 16, 24, 32, 48, 64, and 96. In interface, start with 16-24 px inside components.
 
-### FORMA
+### FORM
 
-Rectángulos como marcos y ventanas. Bordes finos, radios discretos y contraste material. El rectángulo vacío no es un botón por defecto.
+Rectangles as frames and windows. Thin borders, discreet radii, and material contrast. An empty rectangle is not a button by default.
 
 4
 
@@ -201,168 +201,168 @@ Rectángulos como marcos y ventanas. Bordes finos, radios discretos y contraste 
 
 64
 
-La irregularidad pertenece a la textura y la imagen. La estructura de la interfaz conserva alineación y precisión.
+Irregularity belongs to texture and imagery. The interface structure preserves alignment and precision.
 
-## 10 / Fotografía y textura
+## 10 / Photography and texture
 
-**OBJETOS CON HISTORIA. INFORMACIÓN LIMPIA.**
+**OBJECTS WITH A STORY. CLEAN INFORMATION.**
 
-### FOTOGRAFÍA
+### PHOTOGRAPHY
 
-Macros de materiales, piezas y mecanismos. Encuadres claros, sombras controladas y presencia física. Monocromo con color selectivo cuando aporte identidad.
+Macros of materials, parts, and mechanisms. Clear framing, controlled shadows, and physical presence. Monochrome with selective color when it adds identity.
 
-### TEXTURA
+### TEXTURE
 
-Papel casi blanco con grano leve. Desgaste localizado en tablas, impresión y fondos de producto. Mantener libre de ruido el texto funcional.
+Near-white paper with a slight grain. Localized wear on decks, print, and product backgrounds. Keep functional text free of noise.
 
-### ILUSTRACIÓN
+### ILLUSTRATION
 
-Dibujos técnicos, siluetas y despieces para prendas y stickers. Un mismo criterio de trazo y contraste entre colecciones.
+Technical drawings, silhouettes, and exploded views for garments and stickers. One shared criterion of stroke and contrast across collections.
 
-Evitar: suciedad generalizada, estética esports de neón, filtros que ocultan el producto, pequeños textos generados ilegibles y marcas ajenas usadas como identidad de Rectangle's.
+Avoid: generalized grime, neon esports aesthetics, filters that hide the product, small generated text that cannot be read, and third-party marks used as Rectangle's identity.
 
-## 11 / Colección
+## 11 / Collection
 
 **SKATE**
 
-![coleccion skate](assets/coleccion-skate.png)
+![skate collection](assets/coleccion-skate.png)
 
-Tablas contrastantes, despiece técnico y cultura de movimiento. Conservar el nombre dentro del rectángulo.
+Contrasting decks, technical breakdown, and movement culture. Keep the name inside the rectangle.
 
-## 12 / Colección
+## 12 / Collection
 
-**MÚSICA**
+**MUSIC**
 
-![coleccion musica](assets/coleccion-musica.png)
+![music collection](assets/coleccion-musica.png)
 
-Surcos, parlantes y formatos físicos. La música se expresa en producto, prendas, packaging y stickers.
+Grooves, speakers, and physical formats. Music is expressed through product, apparel, packaging, and stickers.
 
-## 13 / Colección
+## 13 / Collection
 
-**VIDEOJUEGOS**
+**VIDEO GAMES**
 
-![coleccion videojuegos](assets/coleccion-videojuegos.png)
+![video games collection](assets/coleccion-videojuegos.png)
 
-Arcade, consolas y cartuchos. Night Shift es una propuesta conceptual, no un videojuego ya producido.
+Arcade, consoles, and cartridges. Night Shift is a conceptual proposal, not an already-produced video game.
 
-## 14 / Colección
+## 14 / Collection
 
 **RETRO COMPUTING**
 
-![coleccion retro computing](assets/coleccion-retro-computing.png)
+![retro computing collection](assets/coleccion-retro-computing.png)
 
-PC y Mac retro como cultura visual. Conecta con la iMac del local; no implica afiliación con fabricantes.
+Retro PC and Mac as visual culture. Connects with the iMac inside the store; no implied affiliation with manufacturers.
 
-## 15 / Espacio y experiencia
+## 15 / Space and experience
 
-**LA MARCA TAMBIÉN SE RECORRE.**
+**THE BRAND IS ALSO WALKED THROUGH.**
 
-![storyboard aprobado](assets/storyboard-aprobado.png)
+![approved storyboard](assets/storyboard-aprobado.png)
 
-Referencia espacial aprobada: primer storyboard con los parlantes añadidos.
+Approved spatial reference: first storyboard with the speakers added.
 
-Hormigón oscuro, metal, luz azul contenida y lámparas cálidas. La gráfica de marca debe integrarse en carteles, prendas, objetos y packaging.
+Dark concrete, metal, contained blue light, and warm lamps. The brand graphics must integrate into signage, apparel, objects, and packaging.
 
-Las colecciones comparten local y sistema. Cada sector tiene objetos propios, sin convertirse en una marca distinta.
+The collections share a single store and system. Each zone has its own objects without becoming a separate brand.
 
-Fachada → entrada → explorar → elegir producto → recorrer hasta detrás del mostrador → iMac / tienda → checkout simulado → volver al lado del cliente → entrega de bolsa → seguir explorando.
+Facade → entrance → explore → pick product → walk behind the counter → iMac / store → simulated checkout → return to the customer side → hand over the bag → keep exploring.
 
-## 16 / Interfaz
+## 16 / Interface
 
-**EL PRODUCTO PRIMERO. LA ACCIÓN CLARA.**
+**PRODUCT FIRST. ACTION CLEAR.**
 
-### IMAGEN DE PRODUCTO
+### PRODUCT IMAGE
 
 Rectangle's Complete
 
 $120
 
-Ver producto
+View product
 
-Card / esquema funcional
+Card / functional schematic
 
 ### CARDS
 
-Fotografía sobre fondo oscuro con textura leve. Información sobre superficie clara. Nombre, precio y CTA siempre legibles.
+Photography on a dark background with slight texture. Information on a light surface. Name, price, and CTA always legible.
 
 ### CTA
 
-Botón sólido negro con texto blanco. Sin líneas azules decorativas, guiones ni adornos dentro del botón.
+Solid black button with white text. No decorative blue lines, dashes, or ornaments inside the button.
 
-### ESTADOS
+### STATES
 
-Foco con contorno azul y separación visible. Selección con etiqueta o icono además del color. Errores junto al campo correspondiente.
+Focus with a blue outline and visible separation. Selection with a tag or icon beyond color alone. Errors next to the corresponding field.
 
-Precios y productos ilustrativos. Un estado hover no reemplaza al foco de teclado. La textura no debe dificultar leer ni activar controles.
+Prices and products are illustrative. A hover state does not replace keyboard focus. Texture must not make it harder to read or activate controls.
 
-## 17 / Tokens iniciales
+## 17 / Initial tokens
 
-**DE LA DIRECCIÓN VISUAL AL SISTEMA.**
+**FROM VISUAL DIRECTION TO SYSTEM.**
 
-Nombres y valores propuestos. Validar antes de convertirlos en librería de producción.
+Proposed names and values. Validate before promoting to a production library.
 
-| Token | Valor inicial | Función |
+| Token | Initial value | Function |
 | --- | --- | --- |
-| color.bg.canvas / surface | #F7F7F3 / #FFFFFF | Fondo general / tarjeta |
-| color.text.primary / secondary | #17191B / #565C62 | Lectura principal / auxiliar |
-| color.action.bg / text | #17191B / #FFFFFF | CTA principal |
-| color.focus / accent | #165DFA | Foco y énfasis selectivo |
-| space / radius / border | 4-96 px / 4 px / 1 px | Ritmo, esquinas y separación |
-| control.minHeight | 44 px | Área interactiva de partida |
+| color.bg.canvas / surface | #F7F7F3 / #FFFFFF | General background / card |
+| color.text.primary / secondary | #17191B / #565C62 | Primary read / auxiliary |
+| color.action.bg / text | #17191B / #FFFFFF | Primary CTA |
+| color.focus / accent | #165DFA | Focus and selective emphasis |
+| space / radius / border | 4-96 px / 4 px / 1 px | Rhythm, corners, and separation |
+| control.minHeight | 44 px | Starting interactive area |
 
-Separar tokens base de tokens semánticos. Añadir success, error y warning cuando se diseñen formularios; sus valores aún no están definidos. Revisar contraste, zoom y legibilidad sobre imágenes.
+Separate base tokens from semantic tokens. Add success, error, and warning when forms are designed; their values are not yet defined. Review contrast, zoom, and legibility over images.
 
-## 18 / Motion y sonido
+## 18 / Motion and sound
 
-**CADA MOVIMIENTO TIENE UN MOTIVO.**
+**EVERY MOVEMENT HAS A REASON.**
 
-### RESPONDER
+### RESPOND
 
-Propuesta: 120-180 ms para hover y selección; 220-320 ms para paneles. Respuestas breves sin rebotes gratuitos.
+Proposed: 120-180 ms for hover and selection; 220-320 ms for panels. Short responses, no gratuitous bounces.
 
-### ORIENTAR
+### ORIENT
 
-Cámaras entre puntos de interés con aceleración suave. Duración a ajustar según distancia. Ofrecer saltar recorridos repetidos.
+Cameras between points of interest with soft acceleration. Duration adjusted to distance. Offer a way to skip repeated tours.
 
-### EXPLICAR
+### EXPLAIN
 
-Despiece del skate, ensamblado y acercamientos revelan relaciones entre componentes. El objeto mantiene una escala comprensible.
+Exploded views of the skate, assembly, and close-ups reveal relationships between parts. The object keeps an understandable scale.
 
-Movimiento reducido: sustituir viajes largos por cortes o fundidos breves. Mantener todas las acciones disponibles. Sonido apagado al inicio, con control visible y estado persistente.
+Reduced motion: replace long travels with short cuts or brief fades. Keep all actions available. Sound off at start, with a visible control and persistent state.
 
-Demo de compra: conservar configuración y carrito al entrar y salir de la iMac. No solicitar tarjeta real. Mostrar "Compra de demostración"; activar la entrega de la bolsa únicamente tras la confirmación simulada.
+Purchase demo: preserve configuration and cart when entering and leaving the iMac. Do not request a real card. Show "Demo purchase"; enable bag handover only after simulated confirmation.
 
 ## 19 / Do's & Don'ts
 
-**CONSISTENCIA SIN RIGIDEZ.**
+**CONSISTENCY WITHOUT RIGIDITY.**
 
-| Área | Hacer | Evitar |
+| Area | Do | Avoid |
 | --- | --- | --- |
-| Logo | Usar las dos variantes aprobadas. | Estirar, deformar o sustituir por un cuadrado. |
-| Color | Neutros y acento azul puntual. | Azul dominante en todas las piezas. |
-| Texto y textura | Mantener lectura clara sobre fondos suaves. | Desgaste sobre precios, campos y CTA. |
-| Colecciones | Cambiar motivos y fotos; conservar identidad. | Inventar un logo diferente por categoría. |
-| Interacción | Mostrar foco, salidas y estado de selección. | Depender solo de hover, audio o color. |
-| Contenido | Usar artes finales propios y datos de demo. | Publicar microtextos generados como finales. |
+| Logo | Use the two approved variants. | Stretch, deform, or replace with a square. |
+| Color | Neutrals with a pointed blue accent. | Blue dominant across every piece. |
+| Text and texture | Keep clear reading over soft backgrounds. | Wear over prices, fields, and CTAs. |
+| Collections | Change motifs and photos; keep identity. | Invent a different logo per category. |
+| Interaction | Show focus, exits, and selection state. | Rely on hover, audio, or color alone. |
+| Content | Use own final artwork and demo data. | Publish generated microcopy as final. |
 
-## 20 / Producción y portfolio
+## 20 / Production and portfolio
 
-**DEL CONCEPTO A LA EVIDENCIA.**
+**FROM CONCEPT TO EVIDENCE.**
 
-### IDENTIDAD MAESTRA
+### MASTER IDENTITY
 
-Dibujar y revisar el logo vectorial. Cerrar proporciones, espaciado y mínimos. Seleccionar fuentes y comprobar permisos de uso. Exportar SVG y PDF.
+Draw and review the vector logo. Lock proportions, spacing, and minimums. Select fonts and verify usage rights. Export SVG and PDF.
 
-### SISTEMA APLICADO
+### APPLIED SYSTEM
 
-Diseñar una ficha, un configurador y un checkout. Validar tokens, contraste y estados. Crear las artes de merch y los recursos para Blender.
+Design a product page, a configurator, and a checkout. Validate tokens, contrast, and states. Create merch artwork and resources for Blender.
 
-### CASO END-TO-END
+### END-TO-END CASE
 
-Mostrar brief, exploraciones, decisiones, sistema, 3D, interacción, implementación y pruebas. Explicar el uso de IA y las correcciones humanas.
+Show brief, exploration, decisions, system, 3D, interaction, implementation, and tests. Explain the use of AI and the human corrections.
 
-Fuentes de este brandbook: conversación y láminas generadas aprobadas de Rectangle's. Las cuatro colecciones se reproducen como referencia conceptual; sus textos, precios y detalles gráficos no son artes finales.
+Sources of this brandbook: conversation and approved generated plates for Rectangle's. The four collections are reproduced as conceptual reference; their text, prices, and graphic details are not final artwork.
 
-Este PDF usa DIN Condensed, Arial y Andale Mono para maquetación. No identifica esas fuentes como las de los mockups ni como selección definitiva para la web. Los ejemplos de logo son esquemáticos; el maestro vectorial queda pendiente.
+This PDF uses DIN Condensed, Arial, and Andale Mono for layout. It does not identify those fonts as the ones from the mockups or as the final selection for the web. The logo examples are schematic; the master vector is still pending.
 
-Alcance: proyecto ficticio de Daniel Rolón para portfolio. Web y checkout de demostración. Ninguna imagen documenta un local construido, una venta real o resultados comerciales.
+Scope: fictional portfolio project by Daniel Rolón. Demo website and checkout. No image documents a built store, a real sale, or commercial results.

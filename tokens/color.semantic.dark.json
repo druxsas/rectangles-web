@@ -1,0 +1,47 @@
+{
+  "theme": {
+    "bg": {
+      "canvas":   { "$type": "color", "$value": "{color.ink-scale.900}", "$description": "Page background (Ink)" },
+      "surface":  { "$type": "color", "$value": "{color.ink-scale.800}", "$description": "Cards, panels" },
+      "muted":    { "$type": "color", "$value": "{color.ink-scale.700}", "$description": "Secondary backgrounds" },
+      "inverse":  { "$type": "color", "$value": "{color.ink-scale.50}",  "$description": "Light background (Paper) — contrast surfaces" }
+    },
+    "fg": {
+      "primary":    { "$type": "color", "$value": "{color.ink-scale.50}",  "$description": "Primary text (Paper)" },
+      "secondary":  { "$type": "color", "$value": "{color.ink-scale.300}", "$description": "Secondary text" },
+      "muted":      { "$type": "color", "$value": "{color.ink-scale.400}", "$description": "Placeholders, disabled" },
+      "inverse":    { "$type": "color", "$value": "{color.ink-scale.900}", "$description": "Text on inverse background" },
+      "on-accent":  { "$type": "color", "$value": "{color.ink-scale.900}", "$description": "Text on cobalt-400 accent (AA)" }
+    },
+    "line": {
+      "default": { "$type": "color", "$value": "{color.ink-scale.700}", "$description": "Borders and dividers" },
+      "strong":  { "$type": "color", "$value": "{color.ink-scale.50}",  "$description": "Emphasis borders" }
+    },
+    "accent": {
+      "default":  { "$type": "color", "$value": "{color.cobalt-scale.400}", "$description": "Lighter cobalt — AA contrast on Ink" },
+      "emphasis": { "$type": "color", "$value": "{color.cobalt-scale.300}" },
+      "muted":    { "$type": "color", "$value": "{color.cobalt-scale.900}", "$description": "Backgrounds for accent tags" }
+    },
+    "action": {
+      "bg":          { "$type": "color", "$value": "{color.ink-scale.50}",  "$description": "Light CTA on Ink background" },
+      "fg":          { "$type": "color", "$value": "{color.ink-scale.900}" },
+      "bg-hover":    { "$type": "color", "$value": "{color.ink-scale.100}" },
+      "bg-pressed":  { "$type": "color", "$value": "{color.ink-scale.200}" },
+      "bg-disabled": { "$type": "color", "$value": "{color.ink-scale.700}" },
+      "fg-disabled": { "$type": "color", "$value": "{color.ink-scale.500}" }
+    },
+    "focus": {
+      "ring": { "$type": "color", "$value": "{color.cobalt-scale.400}", "$description": "Visible focus on Ink" }
+    },
+    "status": {
+      "success":        { "$type": "color", "$value": "{color.green-scale.400}" },
+      "success-bg":     { "$type": "color", "$value": "{color.green-scale.950}" },
+      "warning":        { "$type": "color", "$value": "{color.amber-scale.400}" },
+      "warning-bg":     { "$type": "color", "$value": "{color.amber-scale.950}" },
+      "error":          { "$type": "color", "$value": "{color.red-scale.400}" },
+      "error-bg":       { "$type": "color", "$value": "{color.red-scale.950}" },
+      "info":           { "$type": "color", "$value": "{color.cobalt-scale.400}" },
+      "info-bg":        { "$type": "color", "$value": "{color.cobalt-scale.950}" }
+    }
+  }
+}

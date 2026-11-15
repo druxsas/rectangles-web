@@ -1,29 +1,29 @@
 # Rectangle's — Web
 
-Proyecto digital ficticio de portfolio. Experiencia web inmersiva que recorre el local Rectangle's — skate, música, videojuegos y computadoras retro.
+Fictional portfolio project. Immersive web experience that walks the visitor through the Rectangle's store — skate, music, video games, and retro computing.
 
-**Dirección conceptual:** Daniel Rolón · **Versión:** 0.1 (MVP)
+**Concept direction:** Daniel Rolón · **Version:** 0.1 (MVP)
 
-## Estructura
+## Structure
 
 ```
 .
 ├── app/            Next.js 16 · React 19 · R3F · Tailwind v4
-├── Brandbook/      PDF + MD de la guía de marca
-└── tokens/         Tokens de diseño exportados
+├── Brandbook/      Brand guidelines PDF + Markdown transcription
+└── tokens/         Design tokens (source of truth)
 ```
 
 ## Stack
 
 - **Next.js 16** (App Router, Turbopack, Cache Components)
-- **React Three Fiber + drei + postprocessing** — escena 3D
-- **GSAP + Lenis** — coreografía de scroll
-- **Zustand** — estado compartido
-- **Howler** — audio posicional
-- **Tailwind CSS v4** — estilos + tokens de marca
-- **Vercel** — deploy
+- **React Three Fiber + drei + postprocessing** — 3D scene
+- **GSAP + Lenis** — scroll choreography
+- **Zustand** — shared state
+- **Howler** — positional audio
+- **Tailwind CSS v4** — styles + brand tokens
+- **Vercel** — deployment
 
-## Desarrollo
+## Development
 
 ```bash
 cd app
@@ -31,12 +31,12 @@ pnpm install
 pnpm dev
 ```
 
-## Hoja de ruta
+## Roadmap
 
-- [x] Setup base (Next.js, stack, tokens, canvas global)
-- [ ] Local 3D low-poly (fase MVP)
-- [ ] Scroll coreografiado (7 cámaras del storyboard)
-- [ ] Mini-juego Night Shift en arcade
-- [ ] Audio posicional por zona
-- [ ] Checkout demo en iMac G3
-- [ ] Fase 2 — modelado Blender detallado
+- [x] Base setup (Next.js, stack, tokens, global canvas)
+- [ ] Low-poly 3D store (MVP phase)
+- [ ] Scroll choreography (7 narrative cameras from the storyboard)
+- [ ] Night Shift mini-game on the arcade screen
+- [ ] Positional audio per zone
+- [ ] Demo checkout on the iMac G3
+- [ ] Phase 2 — detailed Blender modeling

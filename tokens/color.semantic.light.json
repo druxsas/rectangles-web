@@ -1,0 +1,47 @@
+{
+  "theme": {
+    "bg": {
+      "canvas":   { "$type": "color", "$value": "{color.ink-scale.50}",   "$description": "Page background (Paper)" },
+      "surface":  { "$type": "color", "$value": "#FFFFFF",                "$description": "Cards, elevated panels" },
+      "muted":    { "$type": "color", "$value": "{color.ink-scale.100}",  "$description": "Secondary backgrounds" },
+      "inverse":  { "$type": "color", "$value": "{color.ink-scale.900}",  "$description": "Dark background (Ink) — contrast surfaces" }
+    },
+    "fg": {
+      "primary":    { "$type": "color", "$value": "{color.ink-scale.900}", "$description": "Primary text (Ink)" },
+      "secondary":  { "$type": "color", "$value": "{color.ink-scale.500}", "$description": "Secondary text (Muted)" },
+      "muted":      { "$type": "color", "$value": "{color.ink-scale.400}", "$description": "Placeholders, disabled text" },
+      "inverse":    { "$type": "color", "$value": "{color.ink-scale.50}",  "$description": "Text on inverse background" },
+      "on-accent":  { "$type": "color", "$value": "#FFFFFF",               "$description": "Text on cobalt accent" }
+    },
+    "line": {
+      "default": { "$type": "color", "$value": "{color.ink-scale.200}", "$description": "Borders and dividers (Line)" },
+      "strong":  { "$type": "color", "$value": "{color.ink-scale.900}", "$description": "Emphasis borders" }
+    },
+    "accent": {
+      "default":  { "$type": "color", "$value": "{color.cobalt-scale.500}", "$description": "Cobalt — primary accent" },
+      "emphasis": { "$type": "color", "$value": "{color.cobalt-scale.600}", "$description": "Accent hover/pressed" },
+      "muted":    { "$type": "color", "$value": "{color.cobalt-scale.100}", "$description": "Backgrounds for accent tags/badges" }
+    },
+    "action": {
+      "bg":          { "$type": "color", "$value": "{color.ink-scale.900}", "$description": "Solid CTA — brandbook §16" },
+      "fg":          { "$type": "color", "$value": "#FFFFFF" },
+      "bg-hover":    { "$type": "color", "$value": "{color.ink-scale.800}" },
+      "bg-pressed":  { "$type": "color", "$value": "{color.ink-scale.700}" },
+      "bg-disabled": { "$type": "color", "$value": "{color.ink-scale.200}" },
+      "fg-disabled": { "$type": "color", "$value": "{color.ink-scale.400}" }
+    },
+    "focus": {
+      "ring": { "$type": "color", "$value": "{color.cobalt-scale.500}", "$description": "Focus outline — brandbook §16" }
+    },
+    "status": {
+      "success":        { "$type": "color", "$value": "{color.green-scale.700}", "$description": "Darker shade required for AA on the light tint" },
+      "success-bg":     { "$type": "color", "$value": "{color.green-scale.50}" },
+      "warning":        { "$type": "color", "$value": "{color.amber-scale.800}", "$description": "Amber needs to go deeper than other hues to pass AA on a light tint" },
+      "warning-bg":     { "$type": "color", "$value": "{color.amber-scale.50}" },
+      "error":          { "$type": "color", "$value": "{color.red-scale.700}", "$description": "Red-600 at 4.41:1 just misses AA on the 50 tint" },
+      "error-bg":       { "$type": "color", "$value": "{color.red-scale.50}" },
+      "info":           { "$type": "color", "$value": "{color.cobalt-scale.700}" },
+      "info-bg":        { "$type": "color", "$value": "{color.cobalt-scale.50}" }
+    }
+  }
+}

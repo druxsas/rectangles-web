@@ -44,5 +44,8 @@ app/.vercel
 # TS build info
 *.tsbuildinfo
 
+# Generated — rebuilt on every `pnpm tokens:build` and automatically on prebuild
+app/src/styles/tokens.generated.css
+
 # Generated / temp
 /tmp/

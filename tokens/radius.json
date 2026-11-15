@@ -1,0 +1,10 @@
+{
+  "radius": {
+    "none": { "$type": "dimension", "$value": "0" },
+    "xs":   { "$type": "dimension", "$value": "2px" },
+    "sm":   { "$type": "dimension", "$value": "4px", "$description": "Brandbook base token" },
+    "md":   { "$type": "dimension", "$value": "6px" },
+    "lg":   { "$type": "dimension", "$value": "8px" },
+    "full": { "$type": "dimension", "$value": "9999px", "$description": "Avatars and circular controls" }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "color": {
+    "ink-scale": {
+      "50":  { "$type": "color", "$value": "#F7F7F3", "$description": "Paper — light surfaces" },
+      "100": { "$type": "color", "$value": "#E8E8E3" },
+      "200": { "$type": "color", "$value": "#D6D8D5", "$description": "Line — borders and dividers" },
+      "300": { "$type": "color", "$value": "#B8BAB6" },
+      "400": { "$type": "color", "$value": "#8E9196" },
+      "500": { "$type": "color", "$value": "#565C62", "$description": "Muted — secondary text" },
+      "600": { "$type": "color", "$value": "#3F4348" },
+      "700": { "$type": "color", "$value": "#2A2D31" },
+      "800": { "$type": "color", "$value": "#1D1F22" },
+      "900": { "$type": "color", "$value": "#17191B", "$description": "Ink — primary text / carbon" },
+      "950": { "$type": "color", "$value": "#0B0C0D" }
+    },
+
+    "cobalt-scale": {
+      "50":  { "$type": "color", "$value": "#EEF3FF" },
+      "100": { "$type": "color", "$value": "#DAE5FF" },
+      "200": { "$type": "color", "$value": "#BACFFF" },
+      "300": { "$type": "color", "$value": "#8AADFF" },
+      "400": { "$type": "color", "$value": "#4A86FF" },
+      "500": { "$type": "color", "$value": "#165DFA", "$description": "Cobalt — brand accent" },
+      "600": { "$type": "color", "$value": "#0F49D6" },
+      "700": { "$type": "color", "$value": "#0F3BAD" },
+      "800": { "$type": "color", "$value": "#11348A" },
+      "900": { "$type": "color", "$value": "#11306E" },
+      "950": { "$type": "color", "$value": "#0A1C45" }
+    },
+
+    "red-scale": {
+      "$description": "Error state ramp. Tuned to harmonize with the Rectangle's palette.",
+      "50":  { "$type": "color", "$value": "#FEF2F2" },
+      "100": { "$type": "color", "$value": "#FEE2E2" },
+      "200": { "$type": "color", "$value": "#FECACA" },
+      "300": { "$type": "color", "$value": "#FCA5A5" },
+      "400": { "$type": "color", "$value": "#F87171" },
+      "500": { "$type": "color", "$value": "#EF4444" },
+      "600": { "$type": "color", "$value": "#DC2626" },
+      "700": { "$type": "color", "$value": "#B91C1C" },
+      "800": { "$type": "color", "$value": "#991B1B" },
+      "900": { "$type": "color", "$value": "#7F1D1D" },
+      "950": { "$type": "color", "$value": "#450A0A" }
+    },
+
+    "green-scale": {
+      "$description": "Success state ramp.",
+      "50":  { "$type": "color", "$value": "#F0FDF4" },
+      "100": { "$type": "color", "$value": "#DCFCE7" },
+      "200": { "$type": "color", "$value": "#BBF7D0" },
+      "300": { "$type": "color", "$value": "#86EFAC" },
+      "400": { "$type": "color", "$value": "#4ADE80" },
+      "500": { "$type": "color", "$value": "#22C55E" },
+      "600": { "$type": "color", "$value": "#16A34A" },
+      "700": { "$type": "color", "$value": "#15803D" },
+      "800": { "$type": "color", "$value": "#166534" },
+      "900": { "$type": "color", "$value": "#14532D" },
+      "950": { "$type": "color", "$value": "#052E16" }
+    },
+
+    "amber-scale": {
+      "$description": "Warning state ramp. Also echoes the warm amber lamps inside the store.",
+      "50":  { "$type": "color", "$value": "#FFFBEB" },
+      "100": { "$type": "color", "$value": "#FEF3C7" },
+      "200": { "$type": "color", "$value": "#FDE68A" },
+      "300": { "$type": "color", "$value": "#FCD34D" },
+      "400": { "$type": "color", "$value": "#FBBF24" },
+      "500": { "$type": "color", "$value": "#F59E0B" },
+      "600": { "$type": "color", "$value": "#D97706" },
+      "700": { "$type": "color", "$value": "#B45309" },
+      "800": { "$type": "color", "$value": "#92400E" },
+      "900": { "$type": "color", "$value": "#78350F" },
+      "950": { "$type": "color", "$value": "#451A03" }
+    }
+  }
+}
