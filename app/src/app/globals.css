@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/* --------------------------------------------------------------------------
+ * Rectangle's — Design tokens (brandbook V0.1)
+ * -------------------------------------------------------------------------- */
+
+:root {
+  /* Color — base */
+  --color-paper: #f7f7f3;
+  --color-ink: #17191b;
+  --color-cobalt: #165dfa;
+  --color-muted: #565c62;
+  --color-line: #d6d8d5;
+  --color-surface: #ffffff;
+
+  /* Color — semantic */
+  --color-bg: var(--color-ink);
+  --color-fg: var(--color-paper);
+  --color-action-bg: var(--color-ink);
+  --color-action-fg: #ffffff;
+  --color-focus: var(--color-cobalt);
+  --color-accent: var(--color-cobalt);
+
+  /* Spacing — base 4px */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+
+  /* Radius */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+
+  /* Border */
+  --border-thin: 1px;
+
+  /* Control */
+  --control-min-h: 44px;
+
+  /* Motion */
+  --motion-fast: 140ms;
+  --motion-base: 240ms;
+  --motion-panel: 320ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --color-paper: var(--color-paper);
+  --color-ink: var(--color-ink);
+  --color-cobalt: var(--color-cobalt);
+  --color-muted: var(--color-muted);
+  --color-line: var(--color-line);
+  --color-surface: var(--color-surface);
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-fg);
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Respetar reducción de motion — brandbook § 18 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
