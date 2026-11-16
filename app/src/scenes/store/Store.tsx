@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from "three";
+import { AdditiveBlending, CanvasTexture, RepeatWrapping, SRGBColorSpace } from "three";
 import { useNightShiftTexture } from "@/scenes/store/NightShift";
 import { ImacScreen } from "@/scenes/store/ImacStore";
 import { IMAC } from "@/scenes/store/imacPose";
@@ -146,6 +146,31 @@ function Storefront() {
   const doorHalf = 0.85;
   const doorTop = 2.7;
   const bandY = 3.75;
+  const signWash = useMemo(() => {
+    // Light falling down the band from the fixture above the letters:
+    // strongest under the fixture, fading toward the bottom and the ends.
+    const c = document.createElement("canvas");
+    c.width = 256;
+    c.height = 64;
+    const ctx = c.getContext("2d")!;
+    const down = ctx.createLinearGradient(0, 0, 0, 64);
+    down.addColorStop(0, "rgba(255,216,176,0.30)");
+    down.addColorStop(0.5, "rgba(255,206,160,0.12)");
+    down.addColorStop(1, "rgba(255,200,150,0.02)");
+    ctx.fillStyle = down;
+    ctx.fillRect(0, 0, 256, 64);
+    ctx.globalCompositeOperation = "destination-in";
+    const ends = ctx.createLinearGradient(0, 0, 256, 0);
+    ends.addColorStop(0, "rgba(0,0,0,0)");
+    ends.addColorStop(0.16, "rgba(0,0,0,1)");
+    ends.addColorStop(0.84, "rgba(0,0,0,1)");
+    ends.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = ends;
+    ctx.fillRect(0, 0, 256, 64);
+    const t = new CanvasTexture(c);
+    t.colorSpace = SRGBColorSpace;
+    return t;
+  }, []);
   const glassBottom = 0.45;
   const glassTop = bandY - 0.4;
 
@@ -176,9 +201,34 @@ function Storefront() {
         <boxGeometry args={[ROOM.w, 0.8, 0.2]} />
         <meshStandardMaterial color={COL.signBg} roughness={0.7} />
       </mesh>
-      {/* Official horizontal lock-up, lit */}
-      <group position={[0, bandY, z + 0.205]}>
-        <LogoPlane variant="horizontal" tone="white" width={3.9} glow={1.6} />
+      {/* Official horizontal lock-up as a real fascia sign: raised matte
+          letters, washed from above by a slim linear fixture, casting a soft
+          shadow on the band. Nothing glows — a self-lit white logo read as a
+          sticker floating on the facade. (Wash and shadow are drawn, so the
+          sign adds no real light to the scene.) */}
+      <mesh position={[0, bandY + 0.36, z + 0.3]}>
+        <boxGeometry args={[4.5, 0.035, 0.09]} />
+        <meshStandardMaterial color="#0b0c0d" roughness={0.45} metalness={0.5} />
+      </mesh>
+      <mesh position={[0, bandY + 0.341, z + 0.3]} rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[4.4, 0.03]} />
+        <meshBasicMaterial color="#ffe9cf" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, bandY, z + 0.2015]}>
+        <planeGeometry args={[5.6, 0.8]} />
+        <meshBasicMaterial map={signWash} transparent depthWrite={false} blending={AdditiveBlending} />
+      </mesh>
+      {/* Shadow, then the letters' thickness, then their lit faces */}
+      <group position={[0.006, bandY - 0.03, z + 0.203]}>
+        <LogoPlane variant="horizontal" tone="black" width={3.9} opacity={0.6} />
+      </group>
+      {[1, 2, 3].map((n) => (
+        <group key={n} position={[0, bandY - n * 0.0035, z + 0.204 + n * 0.006]}>
+          <LogoPlane variant="horizontal" tone="white" width={3.9} tint="#4a4743" />
+        </group>
+      ))}
+      <group position={[0, bandY, z + 0.228]}>
+        <LogoPlane variant="horizontal" tone="white" width={3.9} tint="#c9c5bb" />
       </group>
       {/* Downlights under the sign band + wall sconces */}
       <FacadeLights front={z + 0.2} underside={bandY - 0.4} />
@@ -284,7 +334,8 @@ function BackWallHero() {
       </mesh>
       <mesh position={[0, counterH - 0.02, counterZ + 0.03]} castShadow receiveShadow>
         <boxGeometry args={[4.5, 0.04, 0.85]} />
-        <meshStandardMaterial color="#9aa0a7" roughness={0.34} metalness={0.62} envMapIntensity={1.8} />
+        {/* Matte brushed top: a glossy one mirrors the ceiling light into a white glare */}
+        <meshStandardMaterial color="#6f747a" roughness={0.78} metalness={0.35} envMapIntensity={0.45} />
       </mesh>
       {/* Toe-kick shadow gap */}
       <mesh position={[0, 0.04, counterZ + 0.33]}>

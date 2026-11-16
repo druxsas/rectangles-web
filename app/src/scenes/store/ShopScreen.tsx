@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { CanvasTexture, SRGBColorSpace } from "three";
-import { PRODUCTS, useCheckout } from "@/stores/checkout";
+import { FEATURED, useCheckout } from "@/stores/checkout";
 
 /**
  * Idle picture on the counter iMac: a canvas rendering of the store home
@@ -150,7 +150,7 @@ function draw(ctx: CanvasRenderingContext2D, cartCount: number, imgs: Record<str
   }
 
   // Product cards (top portion visible above the fold, like the live page)
-  PRODUCTS.forEach((p, i) => {
+  FEATURED.forEach((p, i) => {
     const x = 40 + i * (L.card.w + L.card.gap);
     ctx.fillStyle = C.card;
     ctx.fillRect(x, L.card.y, L.card.w, H - L.card.y);
@@ -200,7 +200,7 @@ export function useShopScreenTexture() {
 
   useEffect(() => {
     let alive = true;
-    const sources: [string, string][] = [["hero", "/shop/hero.jpg"], ["logo", "/logo/horizontal-black.png"], ...PRODUCTS.map((p) => [p.id, p.image] as [string, string])];
+    const sources: [string, string][] = [["hero", "/shop/hero.jpg"], ["logo", "/logo/horizontal-black.png"], ...FEATURED.map((p) => [p.id, p.image ?? ""] as [string, string])];
     Promise.all([
       Promise.all(sources.map(([k, src]) => loadImage(src).then((img) => [k, img] as const))),
       loadFaces(),

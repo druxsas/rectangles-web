@@ -252,24 +252,36 @@ export const SkateHQ = model("/models/opt/skate_hq.glb", { fit: { depth: 0.81 } 
  * whites keep the key-legend texture. The display ("Mountail Lion") stays
  * dark — the store UI plane in Store.tsx sits over it.
  */
-const bezelBlack = new MeshPhysicalMaterial({ color: "#050506", roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.08 });
+// iMac finishes. The counter is lit hard from directly above, so mirror-like
+// values turn every edge into a blown-out highlight (and bloom smears it):
+// these are the real object's satin finishes, not showroom chrome.
+const bezelBlack = new MeshPhysicalMaterial({ color: "#050506", roughness: 0.32, clearcoat: 0.35, clearcoatRoughness: 0.4, envMapIntensity: 0.6 });
+const imacAluminium = new MeshStandardMaterial({ color: "#a4a7ab", roughness: 0.5, metalness: 0.85, envMapIntensity: 0.7 });
+const imacSteel = new MeshStandardMaterial({ color: "#9a9da1", roughness: 0.5, metalness: 0.9, envMapIntensity: 0.7 });
+const imacGlass = new MeshPhysicalMaterial({ color: "#0b0d12", roughness: 0.3, metalness: 0, transparent: true, opacity: 0.1, envMapIntensity: 0.25 });
 const graySatin = new MeshStandardMaterial({ color: "#8d9095", roughness: 0.5, metalness: 0.4 });
 export const ImacHQ = model("/models/opt/imac.glb", {
   fit: { width: 0.62 },
   materials: (name, m) => {
     switch (name) {
       case "Aluminium":
-        return aluminium;
+        return imacAluminium;
       case "Black glossy":
         return bezelBlack;
       case "Glass glossy":
-        return glass;
+        return imacGlass;
       case "Glossy White":
       case "Satin White":
-        return m; // key-legend texture
+        // Keys and mouse keep their texture (key legends) but as matte
+        // off-white plastic: pure glossy white clips to a glowing slab.
+        m.color.set("#8f9194");
+        m.roughness = 0.75;
+        m.metalness = 0;
+        m.envMapIntensity = 0.3;
+        return m;
       case "Stainless Steel":
       case "Sterling Silver":
-        return brushedSteel;
+        return imacSteel;
       case "Gray satin":
         return graySatin;
       default:

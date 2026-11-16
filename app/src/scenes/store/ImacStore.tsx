@@ -53,6 +53,13 @@ export function ImacScreen() {
   }, [isOpen]);
 
   return (
+    <>
+      {/* Trim over the bezel/chin seam: the model's two front panels meet on
+          the same plane there and the join renders as a bright dashed line. */}
+      <mesh position={[0, 0.1338, -0.0318]} rotation={[SCREEN.tilt, 0, 0]}>
+        <planeGeometry args={[0.619, 0.0036]} />
+        <meshStandardMaterial color="#050506" roughness={0.6} />
+      </mesh>
     <group position={SCREEN.offset} rotation={[SCREEN.tilt, 0, 0]}>
       <mesh visible={!previewHidden}>
         <planeGeometry args={[SCREEN.width, SCREEN.height]} />
@@ -76,5 +83,6 @@ export function ImacScreen() {
         </Html>
       )}
     </group>
+    </>
   );
 }

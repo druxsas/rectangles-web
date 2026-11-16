@@ -44,6 +44,47 @@ const sans = "var(--font-sans), Inter, system-ui, sans-serif";
 
 // ---- Building blocks ------------------------------------------------------------
 
+/**
+ * A product's photo, or — while the shoot is pending — a branded placeholder
+ * in the same frame (collection, name, framed mark), so new catalog items
+ * can ship before their images do.
+ */
+function ProductImage({ p, src, ratio, width = "100%", scale = 1, alt = "" }: { p: Product; src?: string; ratio: string; width?: number | string; scale?: number; alt?: string }) {
+  const image = src ?? p.image;
+  if (image) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={image} alt={alt} style={{ width, aspectRatio: ratio, objectFit: "cover", display: "block" }} />;
+  }
+  return (
+    <div
+      role="img"
+      aria-label={alt || `${p.title} — image coming soon`}
+      style={{
+        width,
+        aspectRatio: ratio,
+        background: `radial-gradient(120% 90% at 30% 20%, ${p.accent} 0%, #0c0d0f 100%)`,
+        color: "#f4f3ef",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6 * scale,
+        padding: 10 * scale,
+        textAlign: "center",
+        overflow: "hidden",
+      }}
+    >
+      <span style={{ fontFamily: sans, fontWeight: 700, fontSize: 9 * scale, letterSpacing: "0.14em", textTransform: "uppercase", color: "#7fa2ff" }}>
+        {COLLECTION_LABEL[p.collection]} / {p.index}
+      </span>
+      <span style={{ fontFamily: display, fontSize: 24 * scale, lineHeight: 0.95, textTransform: "uppercase", border: `${Math.max(1.5, 2 * scale)}px solid #f4f3ef`, padding: `${5 * scale}px ${10 * scale}px ${3 * scale}px`, maxWidth: "88%" }}>
+        {p.shortTitle}
+      </span>
+      <span style={{ fontFamily: sans, fontWeight: 600, fontSize: 9 * scale, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.6 }}>Image coming soon</span>
+    </div>
+  );
+}
+
 function Display({ children, size, as: Tag = "h2" }: { children: ReactNode; size: number; as?: "h1" | "h2" | "h3" }) {
   return (
     <Tag
@@ -186,6 +227,22 @@ const useStoreFilter = create<{ value: Collection | "all"; set: (v: Collection |
   set: (value) => set({ value }),
 }));
 
+/**
+ * Scroll the store page (and only it) to an element. `scrollIntoView` must
+ * not be used here: it also scrolls every clipped ancestor — including the
+ * CSS-3D layer that lays the page onto the iMac — which pushes the whole
+ * page off the display and leaves the screen black.
+ */
+function scrollStoreTo(id: string) {
+  const target = document.getElementById(id);
+  const root = target?.closest<HTMLElement>("[data-store-root]");
+  if (!target || !root) return;
+  let top = 0;
+  for (let n: HTMLElement | null = target; n && n !== root; n = n.offsetParent as HTMLElement | null) top += n.offsetTop;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  root.scrollTo({ top, behavior: reduced ? "auto" : "smooth" });
+}
+
 // ---- Screens ---------------------------------------------------------------------
 
 function ProductCard({ p }: { p: Product }) {
@@ -204,8 +261,7 @@ function ProductCard({ p }: { p: Product }) {
   return (
     <li style={{ background: C.card, border: `1px solid ${C.line}` }}>
       <button type="button" onClick={() => select(p.id)} data-cursor="hover" className="block w-full" aria-label={`View ${p.title}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={p.image} alt="" style={{ width: "100%", aspectRatio: "356 / 223", objectFit: "cover", display: "block" }} />
+        <ProductImage p={p} ratio="356 / 223" />
       </button>
       <div style={{ padding: "12px 14px 14px" }}>
         <div className="flex items-start justify-between">
@@ -274,7 +330,7 @@ function HomeScreen() {
             <br />
             Same place. Your next find.
           </p>
-          <PrimaryButton size="md" onClick={() => document.getElementById("selected-finds")?.scrollIntoView({ behavior: "smooth" })}>
+          <PrimaryButton size="md" onClick={() => scrollStoreTo("selected-finds")}>
             <span style={{ fontSize: 18, padding: "4px 18px", display: "inline-block" }}>Explore the collection</span>
           </PrimaryButton>
         </div>
@@ -385,7 +441,7 @@ function ProductScreen() {
   const setLine = useCheckout((s) => s.setLineQty);
   const goTo = useCheckout((s) => s.goTo);
   const p = productById(id) ?? PRODUCTS[3];
-  const gallery = p.gallery ?? [p.image];
+  const gallery = p.gallery ?? (p.image ? [p.image] : []);
   const [shot, setShot] = useState(0);
   const [color, setColor] = useState(p.colors?.[0].id);
   const [size, setSize] = useState(p.sizes ? "M" : undefined);
@@ -406,8 +462,7 @@ function ProductScreen() {
       <div style={{ margin: "10px 40px 0", borderTop: `1px solid ${C.ink}` }} />
       <div className="grid" style={{ gridTemplateColumns: "1.18fr 1fr", gap: 40, padding: "22px 40px 0" }}>
         <div>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={gallery[shot]} alt={p.title} style={{ width: "100%", aspectRatio: "853 / 513", objectFit: "cover", display: "block" }} />
+          <ProductImage p={p} src={gallery[shot]} ratio="853 / 513" scale={2.2} alt={p.title} />
           {gallery.length > 1 && (
             <div className="grid" style={{ gridTemplateColumns: `repeat(${gallery.length}, 1fr)`, gap: 12, marginTop: 12 }}>
               {gallery.map((g, i) => (
@@ -712,8 +767,7 @@ function CartScreen() {
               const p = productById(c.productId)!;
               return (
                 <li key={c.key} className="grid items-center" style={{ gridTemplateColumns: "150px 1fr 140px 90px 28px", gap: 18, padding: "14px 0", borderBottom: `1px solid ${C.line}`, fontFamily: sans }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.image} alt="" style={{ width: 150, aspectRatio: "356 / 223", objectFit: "cover" }} />
+                  <ProductImage p={p} ratio="356 / 223" width={150} scale={0.55} />
                   <div>
                     <p style={{ fontWeight: 700, fontSize: 18, margin: 0 }}>{p.title}</p>
                     <p style={{ fontSize: 14, color: C.muted, margin: "2px 0 0" }}>

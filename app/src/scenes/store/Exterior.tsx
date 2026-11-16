@@ -174,11 +174,12 @@ export function Exterior() {
           position={[6.4, 2.75 - i * 0.34, FRONT_Z + 0.04]}
           font={ANTON_TTF}
           fontSize={0.3}
-          color={paper}
+          // Painted on the wall, not a light: kept under the bloom threshold
+          // so the letters stay sharp instead of glowing like neon.
+          color="#a9a69d"
           letterSpacing={0.04}
           anchorX="left"
           anchorY="middle"
-          material-toneMapped={false}
         >
           {w}
         </Text>
