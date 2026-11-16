@@ -9,6 +9,7 @@ import { SCREEN, ZOOM_SECONDS, screenFrame } from "@/scenes/store/imacPose";
 import { KEYFRAMES } from "@/scenes/store/keyframes";
 import { useCheckout } from "@/stores/checkout";
 import { useScroll } from "@/stores/scroll";
+import { useQuality } from "@/canvas/quality";
 import { useTravel } from "@/stores/travel";
 
 const SEGMENTS = KEYFRAMES.length - 1;
@@ -40,7 +41,23 @@ const SCREEN_FOV = 34;
 /** Share of the viewport the display should fill — leaves the bezel visible. */
 const SCREEN_FILL = 0.8;
 
+/**
+ * Adaptive resolution: the scene is fill-rate bound (per-pixel lighting +
+ * post), so while the camera moves it renders at a reduced pixel ratio —
+ * motion hides it — and snaps back to full resolution as soon as the view
+ * settles, so still frames (posters, the iMac) stay crisp. DOM text and the
+ * live store page are never affected.
+ */
+const MOTION_SCALE = 0.6;
+const MOTION_MIN_DPR = 0.75;
+const SETTLE_MS = 220;
+
 type RigState = {
+  /** Last camera pose, to detect motion. */
+  lastPos: Vector3;
+  lastLook: Vector3;
+  stillSince: number;
+  lowRes: boolean;
   blend: number;
   locked: boolean;
   yaw: number;
@@ -181,6 +198,10 @@ function step(
 export function CameraRig() {
   const { camera, size } = useThree();
   const rig = useRef<RigState>({
+    lastPos: new Vector3(),
+    lastLook: new Vector3(),
+    stillSince: 0,
+    lowRes: false,
     blend: 0,
     locked: false,
     yaw: 0,
@@ -212,7 +233,25 @@ export function CameraRig() {
     [],
   );
 
-  useFrame((_, dt) => step(camera as PerspectiveCamera, size.width / size.height, dt, rig.current, screen, reducedMotion));
+  const setDpr = useThree((s) => s.setDpr);
+  const fullDpr = useQuality((s) => Math.min(s.dpr, typeof window === "undefined" ? 1 : window.devicePixelRatio));
+
+  useFrame((_, dt) => {
+    const r = rig.current;
+    step(camera as PerspectiveCamera, size.width / size.height, dt, r, screen, reducedMotion);
+
+    // --- Adaptive resolution
+    const moved = camera.position.distanceToSquared(r.lastPos) > 1e-7 || outLook.distanceToSquared(r.lastLook) > 1e-7;
+    r.lastPos.copy(camera.position);
+    r.lastLook.copy(outLook);
+    const now = performance.now();
+    if (moved) r.stillSince = now;
+    const wantLow = now - r.stillSince < SETTLE_MS;
+    if (wantLow !== r.lowRes) {
+      r.lowRes = wantLow;
+      setDpr(wantLow ? Math.max(MOTION_MIN_DPR, fullDpr * MOTION_SCALE) : fullDpr);
+    }
+  });
 
   return null;
 }

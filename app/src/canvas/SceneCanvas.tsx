@@ -1,6 +1,6 @@
 "use client";
 
-import { Environment, Lightformer } from "@react-three/drei";
+import { Environment, Lightformer, Stats } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Suspense, useEffect, useRef } from "react";
 import { CameraRig } from "@/canvas/CameraRig";
@@ -31,6 +31,8 @@ export function SceneCanvas() {
   const tier = useQuality((s) => s.tier);
   const dpr = useQuality((s) => s.dpr);
   const high = tier === "high";
+  // `?debug=1`: FPS / frame-time panel for measuring on real devices.
+  const debug = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("debug");
 
   useEffect(() => {
     useQuality.getState().setTier(detectTier());
@@ -51,7 +53,9 @@ export function SceneCanvas() {
         shadows={high ? "soft" : false}
         camera={{ position: [0, 1.75, 15], fov: 56, near: 0.05, far: 80 }}
         onCreated={(state) => {
-          if (process.env.NODE_ENV !== "production") (window as unknown as { __r3f: unknown }).__r3f = state;
+          // Expose the renderer for profiling: always in dev, `?debug=1` in production.
+          if (process.env.NODE_ENV !== "production" || new URLSearchParams(window.location.search).has("debug"))
+            (window as unknown as { __r3f: unknown }).__r3f = state;
         }}
       >
         <color attach="background" args={["#0a0b0d"]} />
@@ -65,6 +69,8 @@ export function SceneCanvas() {
             <Lightformer form="rect" intensity={1.2} color="#ffbc7a" position={[-5, 3, 2]} rotation-y={Math.PI / 2} scale={[6, 2, 1]} />
             <Lightformer form="rect" intensity={0.8} color="#8bb3e0" position={[5, 2, 4]} rotation-y={-Math.PI / 2} scale={[6, 2, 1]} />
             <Lightformer form="rect" intensity={0.6} color="#f1dfc6" position={[0, 2, 8]} rotation-y={Math.PI} scale={[10, 3, 1]} />
+            {/* Soft ceiling panel on the visitor side: gives the steel counter its sheen */}
+            <Lightformer form="rect" intensity={1.4} color="#fff3e2" position={[0, 3.8, -1.2]} rotation-x={Math.PI / 2} scale={[5, 2.2, 1]} />
           </Environment>
           <ambientLight intensity={high ? 0.3 : 0.42} color="#5a3f2a" />
           <hemisphereLight args={["#2a3b5a", "#1d1710", high ? 0.5 : 0.65]} />
@@ -89,6 +95,7 @@ export function SceneCanvas() {
         </Suspense>
         <CameraRig />
         <PostProcessing />
+        {debug && <Stats showPanel={0} />}
       </Canvas>
       <SceneSkeleton />
     </div>

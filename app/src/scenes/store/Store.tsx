@@ -11,6 +11,7 @@ import { LogoPlane } from "@/scenes/store/LogoPlane";
 import { Deck, type DeckArtName } from "@/scenes/store/DeckArt";
 import { WallPosters } from "@/scenes/store/Posters";
 import { TrackLighting } from "@/scenes/store/Lighting";
+import { CounterLights, FacadeLights } from "@/scenes/store/LightFixtures";
 import { Hotspots } from "@/scenes/store/Hotspots";
 import {
   ArcadeHQ,
@@ -179,7 +180,8 @@ function Storefront() {
       <group position={[0, bandY, z + 0.205]}>
         <LogoPlane variant="horizontal" tone="white" width={3.9} glow={1.6} />
       </group>
-      <pointLight position={[0, bandY - 0.2, z + 1.2]} color={COL.warm} intensity={2.5} distance={5} decay={1.6} />
+      {/* Downlights under the sign band + wall sconces */}
+      <FacadeLights front={z + 0.2} underside={bandY - 0.4} />
 
       {/* Pillars at both ends */}
       {[-1, 1].map((side) => (
@@ -271,26 +273,26 @@ function BackWallHero() {
       {/* Wall-wash behind the sign */}
       <pointLight position={[0, 3.5, -HALF_D + 0.6]} color={COL.warm} intensity={3} distance={4.5} decay={1.6} />
 
-      {/* Counter — dark steel carcass, perforated front, blackened-steel top */}
+      {/* Counter — dark steel carcass, perforated front, brushed-steel top */}
       <mesh position={[0, counterH / 2 - 0.02, counterZ]} castShadow receiveShadow>
         <boxGeometry args={[4.4, counterH - 0.04, 0.75]} />
-        <meshStandardMaterial color="#1c1e21" roughness={0.5} metalness={0.7} />
+        <meshStandardMaterial color="#25282c" roughness={0.42} metalness={0.8} envMapIntensity={1.6} />
       </mesh>
       <mesh position={[0, counterH / 2 - 0.04, counterZ + 0.376]}>
         <planeGeometry args={[4.4, counterH - 0.12]} />
-        <meshStandardMaterial map={perforated} roughness={0.45} metalness={0.8} />
+        <meshStandardMaterial map={perforated} color="#c9ccd1" roughness={0.42} metalness={0.55} envMapIntensity={1.6} />
       </mesh>
       <mesh position={[0, counterH - 0.02, counterZ + 0.03]} castShadow receiveShadow>
         <boxGeometry args={[4.5, 0.04, 0.85]} />
-        <meshStandardMaterial color="#141517" roughness={0.5} metalness={0.8} />
+        <meshStandardMaterial color="#9aa0a7" roughness={0.34} metalness={0.62} envMapIntensity={1.8} />
       </mesh>
       {/* Toe-kick shadow gap */}
       <mesh position={[0, 0.04, counterZ + 0.33]}>
         <boxGeometry args={[4.4, 0.08, 0.02]} />
         <meshStandardMaterial color="#050505" />
       </mesh>
-      {/* Warm task light over the counter */}
-      <pointLight position={[0, 2.2, counterZ + 0.6]} color={COL.warm} intensity={2.4} distance={3.5} decay={1.6} />
+      {/* Linear ceiling fixture: downlights on the steel counter top */}
+      <CounterLights z={counterZ + 0.03} top={counterH} front={counterZ + 0.46} width={4.5} />
 
       {/* William, the vendor, behind the counter */}
       <WilliamHQ position={[0.6, 0, -4.35]} rotation={[0, -0.15, 0]} />

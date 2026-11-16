@@ -46,6 +46,8 @@ type ModelSpec = {
   preRotation?: [number, number, number];
   /** Node names (or prefixes) to drop from the scene graph. */
   hide?: string[];
+  /** Node names to keep (mesh or parent group) — every other mesh is dropped (pick one piece of a set). */
+  keep?: string[];
   /** Per-material replacement keyed by the source material name. */
   materials?: MaterialOverride;
   castShadow?: boolean;
@@ -82,6 +84,21 @@ function normalize(
   maps?: Record<string, Texture>,
 ): Group {
   const root = source.clone(true);
+
+  if (spec.keep?.length) {
+    const drop: Object3D[] = [];
+    root.traverse((o) => {
+      if (!(o as Mesh).isMesh) return;
+      // Multi-material nodes load as a group of sub-meshes: match the mesh or any ancestor.
+      let p: Object3D | null = o;
+      while (p) {
+        if (spec.keep!.includes(p.name)) return;
+        p = p.parent;
+      }
+      drop.push(o);
+    });
+    drop.forEach((o) => o.removeFromParent());
+  }
 
   if (spec.hide?.length) {
     const drop: Object3D[] = [];
@@ -443,15 +460,38 @@ export const WilliamHQ = model("/models/opt/william.glb", {
  * user-supplied. Source textures were not shipped with the OBJ, so leaves,
  * stems, pots, soil and marble get brand-palette materials.
  */
-export const PlantsHQ = model("/models/opt/plants_hq.glb", {
-  fit: { height: 1.9 },
-  materials: (name) => {
-    if (name === "Material__8") return leaf;
+const plantMaterials: ModelSpec["materials"] = (name) => {
+  if (name === "Material__8") return leaf;
     if (name === "Material__7") return stem;
     if (name === "Material__4") return ceramicInk;
     if (name === "Material__5") return soil;
     if (name.startsWith("Marble_White")) return marble;
-    return undefined;
-  },
+  return undefined;
+};
+
+export const PlantsHQ = model("/models/opt/plants_hq.glb", {
+  fit: { height: 1.9 },
+  materials: plantMaterials,
+});
+
+/** Single bird-of-paradise in its tall black ceramic pot (from the set). */
+export const PlantTallHQ = model("/models/opt/plants_hq.glb", {
+  fit: { height: 1.45 },
+  keep: ["Bird_Of_ParadiseBird_Version04_4", "Bird_Of_ParadiseBird_Version04_2_Vase003"],
+  materials: plantMaterials,
+});
+
+/** Same tall black planter, large — flanking the entrance door. */
+export const PlantBigHQ = model("/models/opt/plants_hq.glb", {
+  fit: { height: 1.8 },
+  keep: ["Bird_Of_ParadiseBird_Version04_4", "Bird_Of_ParadiseBird_Version04_2_Vase003"],
+  materials: plantMaterials,
+});
+
+/** Single bird-of-paradise in its low black ceramic pot (from the set). */
+export const PlantLowHQ = model("/models/opt/plants_hq.glb", {
+  fit: { height: 1.2 },
+  keep: ["Bird_Of_ParadiseBird_Version04_3", "Bird_Of_ParadiseBird_Version04_2_Vase002"],
+  materials: plantMaterials,
 });
 export const TurntableModel = model("/models/opt/turntable.glb", { fit: { width: 0.46 } });

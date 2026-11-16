@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { Object3D } from "three";
 import { HokasuTrack } from "@/scenes/store/models";
+import { AimedSpot, LightBeam } from "@/scenes/store/LightFixtures";
 import { useQuality } from "@/canvas/quality";
 
 /**
@@ -30,20 +29,11 @@ const MODULES: ModuleSpec[] = [
 ];
 
 function TrackSpot({ from, to }: { from: [number, number, number]; to: [number, number, number] }) {
-  const target = useMemo(() => new Object3D(), []);
   return (
     <>
-      <primitive object={target} position={to} />
-      <spotLight
-        position={from}
-        target={target}
-        color="#ffcf9e"
-        intensity={9}
-        distance={8}
-        angle={0.62}
-        penumbra={0.75}
-        decay={1.6}
-      />
+      <AimedSpot from={from} to={to} intensity={20} distance={10} angle={0.6} penumbra={0.7} />
+      {/* Visible beam so the spot reads as light in the air */}
+      <LightBeam from={from} to={to} spread={1.15} opacity={0.08} />
     </>
   );
 }
