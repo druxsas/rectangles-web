@@ -9,6 +9,7 @@ import {
   DECK_GRAPHICS,
   PRODUCTS,
   SETUP_PARTS,
+  keyOf,
   productById,
   useCheckout,
   type Collection,
@@ -190,7 +191,12 @@ const useStoreFilter = create<{ value: Collection | "all"; set: (v: Collection |
 function ProductCard({ p }: { p: Product }) {
   const select = useCheckout((s) => s.select);
   const add = useCheckout((s) => s.addToCart);
+  const goTo = useCheckout((s) => s.goTo);
+  // One click adds one; after that the button shows the quantity and opens
+  // the cart (where it can be changed) instead of piling more on.
+  const inCart = useCheckout((s) => s.cart.reduce((n, c) => (c.productId === p.id ? n + c.qty : n), 0));
   const quickAdd = () => {
+    if (inCart) return goTo("cart");
     if (p.configurable) add(p.id, "Black Frame");
     else if (p.sizes) add(p.id, `${p.colors?.[0].label} · M`);
     else add(p.id);
@@ -210,12 +216,31 @@ function ProductCard({ p }: { p: Product }) {
           <button
             type="button"
             onClick={quickAdd}
-            aria-label={`Add ${p.shortTitle} to cart`}
+            aria-label={inCart ? `${p.shortTitle}: ${inCart} in cart — view cart` : `Add ${p.shortTitle} to cart`}
             data-cursor="hover"
             className="hover:bg-black hover:text-white transition-colors"
-            style={{ width: 24, height: 24, borderRadius: 12, border: `1.5px solid ${C.ink}`, lineHeight: "20px", fontSize: 17 }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              minWidth: 24,
+              height: 24,
+              padding: inCart ? "0 6px" : 0,
+              borderRadius: 12,
+              border: `1.5px solid ${C.ink}`,
+              lineHeight: 1,
+              fontSize: 13,
+              fontWeight: inCart ? 700 : 400,
+              background: inCart ? C.ink : undefined,
+              color: inCart ? "#fff" : undefined,
+            }}
           >
-            +
+            {inCart || (
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden>
+                <path d="M5 0.5v9M0.5 5h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            )}
           </button>
         </div>
         <div style={{ marginTop: 10 }}>
@@ -357,16 +382,23 @@ function OptionChip({ selected, onClick, children, width }: { selected: boolean;
 
 function ProductScreen() {
   const id = useCheckout((s) => s.selectedId);
-  const add = useCheckout((s) => s.addToCart);
+  const setLine = useCheckout((s) => s.setLineQty);
   const goTo = useCheckout((s) => s.goTo);
   const p = productById(id) ?? PRODUCTS[3];
   const gallery = p.gallery ?? [p.image];
   const [shot, setShot] = useState(0);
   const [color, setColor] = useState(p.colors?.[0].id);
   const [size, setSize] = useState(p.sizes ? "M" : undefined);
-  const [qty, setQty] = useState(1);
-  const [added, setAdded] = useState(false);
   const variant = [p.colors?.find((c) => c.id === color)?.label, size].filter(Boolean).join(" · ") || undefined;
+  // The counter IS the cart quantity for this variant: adding sets the line
+  // to the counter's value, so repeated clicks never stack extra units.
+  const lineKey = keyOf(p.id, variant);
+  const inCart = useCheckout((s) => s.cart.find((c) => c.key === lineKey)?.qty ?? 0);
+  // A pending edit lives only until the variant or the cart line changes.
+  const [draft, setDraft] = useState<{ key: string; base: number; qty: number } | null>(null);
+  const qty = draft && draft.key === lineKey && draft.base === inCart ? draft.qty : inCart || 1;
+  const setQty = (n: number) => setDraft({ key: lineKey, base: inCart, qty: n });
+  const synced = inCart > 0 && inCart === qty;
 
   return (
     <>
@@ -464,18 +496,18 @@ function ProductScreen() {
                   type="button"
                   data-cursor="hover"
                   onClick={() => {
-                    add(p.id, variant, qty);
-                    setAdded(true);
+                    if (synced) goTo("cart");
+                    else setLine(p.id, variant, qty);
                   }}
                   className="w-full hover:opacity-90"
                   style={{ height: 48, background: C.ink, color: "#fff", fontFamily: sans, fontWeight: 700, fontSize: 20, borderRadius: 2 }}
                 >
-                  {added ? "Added — view cart" : "Add to cart"}
+                  {synced ? `In cart (${inCart}) — view cart` : inCart ? `Update cart to ${qty}` : "Add to cart"}
                 </button>
               </div>
             </div>
           </div>
-          {added && (
+          {inCart > 0 && (
             <div style={{ marginTop: 8, textAlign: "right" }}>
               <TextLink onClick={() => goTo("cart")}>Go to cart →</TextLink>
             </div>
@@ -515,9 +547,9 @@ function SetupScreen() {
   const [view, setView] = useState<"assembled" | "exploded">("exploded");
   const [graphic, setGraphic] = useState<DeckGraphic>("black-frame");
   const [open, setOpen] = useState("deck");
-  const [added, setAdded] = useState(false);
   const total = SETUP_PARTS.reduce((s, p) => s + p.price, 0);
   const graphicLabel = DECK_GRAPHICS.find((g) => g.id === graphic)!.label;
+  const added = useCheckout((s) => s.cart.some((c) => c.key === keyOf("complete-01", graphicLabel)));
 
   return (
     <>
@@ -637,7 +669,6 @@ function SetupScreen() {
                 onClick={() => {
                   if (added) return goTo("cart");
                   add("complete-01", graphicLabel);
-                  setAdded(true);
                 }}
               >
                 {added ? "View cart" : "Add setup to cart"}
@@ -829,14 +860,30 @@ function ConfirmedScreen() {
 
 // ---- Page shell ------------------------------------------------------------------
 
+/** Page transition timings, ms. */
+const PAGE_OUT_MS = 150;
+const PAGE_IN_MS = 380;
+
 export function StorePage() {
   const screen = useCheckout((s) => s.screen);
   const scroller = useRef<HTMLDivElement>(null);
+  // Page transition: the current screen eases out, then the next one starts
+  // at the top (like a page navigation) and eases in.
+  const [shown, setShown] = useState(screen);
+  const leaving = shown !== screen;
 
-  // Each screen starts at the top, like a page navigation.
   useEffect(() => {
-    scroller.current?.scrollTo({ top: 0 });
-  }, [screen]);
+    if (shown === screen) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const t = window.setTimeout(
+      () => {
+        scroller.current?.scrollTo({ top: 0 });
+        setShown(screen);
+      },
+      reduced ? 0 : PAGE_OUT_MS,
+    );
+    return () => window.clearTimeout(t);
+  }, [screen, shown]);
 
   return (
     <div
@@ -856,12 +903,20 @@ export function StorePage() {
       }}
     >
       <Header />
-      {screen === "home" && <HomeScreen />}
-      {screen === "product" && <ProductScreen />}
-      {screen === "setup" && <SetupScreen />}
-      {screen === "cart" && <CartScreen />}
-      {screen === "checkout" && <CheckoutScreen />}
-      {screen === "confirmed" && <ConfirmedScreen />}
+      <div key={shown} className={leaving ? "store-page store-page-out" : "store-page"}>
+        {shown === "home" && <HomeScreen />}
+        {shown === "product" && <ProductScreen />}
+        {shown === "setup" && <SetupScreen />}
+        {shown === "cart" && <CartScreen />}
+        {shown === "checkout" && <CheckoutScreen />}
+        {shown === "confirmed" && <ConfirmedScreen />}
+      </div>
+      <style>{`
+        .store-page{animation:store-page-in ${PAGE_IN_MS}ms cubic-bezier(.2,.7,.2,1) both}
+        .store-page-out{animation:none;opacity:0;transform:translateY(-8px);transition:opacity ${PAGE_OUT_MS}ms ease,transform ${PAGE_OUT_MS}ms ease;pointer-events:none}
+        @keyframes store-page-in{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+        @media (prefers-reduced-motion: reduce){.store-page,.store-page-out{animation:none;transition:none;transform:none}}
+      `}</style>
     </div>
   );
 }

@@ -1,13 +1,14 @@
 "use client";
 
 import { Environment, Lightformer, Stats } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useRef } from "react";
 import { CameraRig } from "@/canvas/CameraRig";
 import { PostProcessing } from "@/canvas/PostProcessing";
 import { detectTier, useQuality } from "@/canvas/quality";
 import { SceneSkeleton, useSceneReady } from "@/components/scene-skeleton";
 import { Store } from "@/scenes/store/Store";
+import { useScroll } from "@/stores/scroll";
 
 /**
  * Global persistent R3F canvas — the store is here and nothing else.
@@ -17,6 +18,34 @@ import { Store } from "@/scenes/store/Store";
  * shadows, lights and post-processing are set once, without recompiles.
  */
 /** Mounted after <Store/> inside Suspense: flags the scene as ready a few frames after it first renders. */
+/**
+ * The shadow map is re-rendered only when something that casts can have
+ * moved, instead of every frame: the scene is static except the entrance
+ * doors (scroll-driven, facade → entrance). A slow heartbeat picks up
+ * anything that streams in late. Skipping the pass saves drawing every
+ * shadow caster a second time per frame.
+ */
+function StaticShadows() {
+  const gl = useThree((s) => s.gl);
+  const frame = useRef(0);
+  const lastStop = useRef(-1);
+  useEffect(() => {
+    gl.shadowMap.autoUpdate = false;
+    gl.shadowMap.needsUpdate = true;
+    return () => {
+      gl.shadowMap.autoUpdate = true;
+    };
+  }, [gl]);
+  useFrame(() => {
+    const stop = useScroll.getState().stop;
+    const doorsMoving = stop < 1.2 && Math.abs(stop - lastStop.current) > 1e-4;
+    lastStop.current = stop;
+    frame.current += 1;
+    if (frame.current < 120 || doorsMoving || frame.current % 120 === 0) gl.shadowMap.needsUpdate = true;
+  });
+  return null;
+}
+
 function SceneReady() {
   const frames = useRef(0);
   useFrame(() => {
@@ -91,6 +120,7 @@ export function SceneCanvas() {
           />
           <directionalLight position={[0, 5, 14]} intensity={0.6} color="#8bb3e0" />
           <Store />
+          {high && <StaticShadows />}
           <SceneReady />
         </Suspense>
         <CameraRig />

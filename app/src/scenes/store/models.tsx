@@ -128,6 +128,14 @@ function normalize(
         });
       }
       const base = spec.materials?.(name, m as MeshStandardMaterial) ?? m;
+      // A single transmissive material (e.g. a 3 mm indicator lens) makes
+      // three.js render the whole scene a second time, every frame, for the
+      // transmission buffer. Nothing here is worth that: draw it opaque.
+      const phys = base as MeshPhysicalMaterial;
+      if (phys.isMeshPhysicalMaterial && phys.transmission > 0) {
+        phys.transmission = 0;
+        phys.needsUpdate = true;
+      }
       const map = maps?.[name];
       if (map && (base as MeshStandardMaterial).isMeshStandardMaterial) {
         const art = (base as MeshStandardMaterial).clone();
@@ -413,6 +421,9 @@ export const RecordPlayerHQ = model("/models/opt/record_player.glb", {
   materials: (name, m) => {
     if (name === "label") {
       return new MeshStandardMaterial({ map: sessionsLabelTexture(), roughness: 0.55, name });
+    }
+    if (name === "light indicator") {
+      return new MeshStandardMaterial({ color: "#1a0503", emissive: new Color("#ff3b1f"), emissiveIntensity: 2.5, toneMapped: false, name });
     }
     return m;
   },

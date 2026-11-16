@@ -139,6 +139,8 @@ type CheckoutState = {
   goTo: (screen: ShopScreen) => void;
   select: (productId: string) => void;
   addToCart: (productId: string, variant?: string, qty?: number) => void;
+  /** Set a line's total quantity (the product page's counter is the cart quantity). */
+  setLineQty: (productId: string, variant: string | undefined, qty: number) => void;
   incQty: (key: string) => void;
   decQty: (key: string) => void;
   removeFromCart: (key: string) => void;
@@ -147,7 +149,7 @@ type CheckoutState = {
   totalPrice: () => number;
 };
 
-const keyOf = (productId: string, variant?: string) => (variant ? `${productId}::${variant}` : productId);
+export const keyOf = (productId: string, variant?: string) => (variant ? `${productId}::${variant}` : productId);
 
 export const useCheckout = create<CheckoutState>((set, get) => ({
   isOpen: false,
@@ -170,6 +172,16 @@ export const useCheckout = create<CheckoutState>((set, get) => ({
       const existing = state.cart.find((c) => c.key === key);
       if (existing) {
         return { cart: state.cart.map((c) => (c.key === key ? { ...c, qty: c.qty + qty } : c)) };
+      }
+      return { cart: [...state.cart, { key, productId, variant, qty }] };
+    }),
+
+  setLineQty: (productId, variant, qty) =>
+    set((state) => {
+      const key = keyOf(productId, variant);
+      if (qty <= 0) return { cart: state.cart.filter((c) => c.key !== key) };
+      if (state.cart.some((c) => c.key === key)) {
+        return { cart: state.cart.map((c) => (c.key === key ? { ...c, qty } : c)) };
       }
       return { cart: [...state.cart, { key, productId, variant, qty }] };
     }),
