@@ -2,6 +2,7 @@ import { SceneCanvas } from "@/canvas/SceneCanvas";
 import { CustomCursor } from "@/components/custom-cursor";
 import { EditorialSections, ScrollProgress } from "@/components/editorial-sections";
 import { LoadingReveal } from "@/components/loading-reveal";
+import { LookArrows } from "@/components/look-arrows";
 import { SiteNav } from "@/components/site-nav";
 import { HideWhenShopping } from "@/components/store/HideWhenShopping";
 import { ShoppingMode } from "@/components/store/ShoppingMode";
@@ -21,6 +22,7 @@ export default function Home() {
       <LoadingReveal />
       <CustomCursor />
       <ShoppingMode />
+      <LookArrows />
       <HideWhenShopping>
         <ScrollProgress />
         <SiteNav />

@@ -3,7 +3,7 @@
 import { Html } from "@react-three/drei";
 import { useEffect, useState } from "react";
 import { STORE_H, STORE_W, StorePage } from "@/components/store/StorePage";
-import { SCREEN } from "@/scenes/store/imacPose";
+import { SCREEN, ZOOM_SECONDS } from "@/scenes/store/imacPose";
 import { useShopScreenTexture } from "@/scenes/store/ShopScreen";
 import { useCheckout } from "@/stores/checkout";
 
@@ -23,30 +23,42 @@ import { useCheckout } from "@/stores/checkout";
 /** drei <Html transform>: 1 CSS px = distanceFactor / 400 world units. */
 const DISTANCE_FACTOR = (400 * SCREEN.width) / STORE_W;
 
+/** Live page fade-in, ms. */
+const FADE_MS = 220;
+
 export function ImacScreen() {
   const isOpen = useCheckout((s) => s.isOpen);
   const texture = useShopScreenTexture();
-  const [arrived, setArrived] = useState(false);
-  const live = isOpen && arrived;
+  // 0 idle → 1 live page fading in (preview still underneath) → 2 live only.
+  const [stage, setStage] = useState<0 | 1 | 2>(0);
+  const live = isOpen && stage > 0;
+  const previewHidden = isOpen && stage === 2;
 
-  // Bring the live page in once the camera has nearly arrived; drop it
-  // immediately on close so the texture shows during the pull-back.
+  // The live page appears only once the zoom has fully settled: while the
+  // camera moves, the CSS-3D page can trail the WebGL frame by a frame on
+  // phones, which read as two overlapping copies. Once it's opaque the
+  // preview is hidden so both are never visible together; on close the
+  // preview returns first and the page is removed.
   useEffect(() => {
     if (!isOpen) return;
-    const t = window.setTimeout(() => setArrived(true), 650);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const settle = reduced ? 0 : ZOOM_SECONDS * 1000 + 60;
+    const t1 = window.setTimeout(() => setStage(1), settle);
+    const t2 = window.setTimeout(() => setStage(2), settle + FADE_MS + 40);
     return () => {
-      window.clearTimeout(t);
-      setArrived(false);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      setStage(0);
     };
   }, [isOpen]);
 
   return (
     <group position={SCREEN.offset} rotation={[SCREEN.tilt, 0, 0]}>
-      <mesh>
+      <mesh visible={!previewHidden}>
         <planeGeometry args={[SCREEN.width, SCREEN.height]} />
         <meshBasicMaterial map={texture} color="#c9c9c9" toneMapped={false} />
       </mesh>
-      {isOpen && (
+      {live && (
         <Html
           transform
           distanceFactor={DISTANCE_FACTOR}
@@ -55,9 +67,9 @@ export function ImacScreen() {
           style={{
             width: STORE_W,
             height: STORE_H,
-            opacity: live ? 1 : 0,
-            transition: "opacity 320ms ease",
-            pointerEvents: live ? "auto" : "none",
+            opacity: stage === 0 ? 0 : 1,
+            transition: `opacity ${FADE_MS}ms ease`,
+            pointerEvents: "auto",
           }}
         >
           <StorePage />

@@ -1,12 +1,13 @@
 "use client";
 
 import { KEYFRAMES } from "@/scenes/store/keyframes";
-import { useScroll } from "@/stores/scroll";
+import { useReachableStops, useScroll } from "@/stores/scroll";
 
 /**
  * Minimal DOM overlay for the immersive walkthrough.
  *
- * Seven stacked 100vh anchors (one per keyframe) give Lenis something to
+ * Stacked 100vh anchors (one per reachable keyframe — the handoff joins
+ * after the demo checkout) give Lenis something to
  * scroll and the camera rig its progress. Each anchor shows a small
  * caption with the keyframe's title + body that fades based on how
  * centered the camera is on that stop.
@@ -17,17 +18,15 @@ const MUTED = "#8e9196";
 const COBALT = "#165dfa";
 
 export function EditorialSections() {
-  const progress = useScroll((s) => s.progress);
-  const section = useScroll((s) => s.section);
-  const total = KEYFRAMES.length;
+  const stop = useScroll((s) => s.stop);
+  const total = useReachableStops();
+  const section = Math.round(stop);
 
   return (
     <div className="relative w-full pointer-events-none">
-      {KEYFRAMES.map((k, i) => {
-        const sectionMid = (i + 0.5) / total;
-        const distance = Math.abs(progress - sectionMid);
-        const halfSlot = 0.5 / total;
-        const closeness = Math.max(0, 1 - distance / halfSlot);
+      {KEYFRAMES.slice(0, total).map((k, i) => {
+        // 1 when the camera sits on this stop, 0 half a stop away.
+        const closeness = Math.max(0, 1 - Math.abs(stop - i) * 2);
         const active = i === section;
 
         return (
