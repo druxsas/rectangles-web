@@ -49,3 +49,7 @@ app/src/styles/tokens.generated.css
 
 # Generated / temp
 /tmp/
+
+# Source 3D assets (converted to app/public/models/*.glb via Blender)
+/3D_Objects/
+

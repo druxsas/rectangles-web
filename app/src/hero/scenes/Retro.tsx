@@ -7,11 +7,11 @@ import type { Group } from "three";
 import { useCheckout } from "@/stores/checkout";
 
 /**
- * Retro hero — the iMac G3 (Blender original, CC0) as the shop portal.
- * Click to open the marketplace. Slow Y rotation + hover pulse, cobalt
- * rim light so the Bondi-blue shell reads.
+ * Retro hero — iMac G3 high-poly (Draco-compressed) as the shop portal.
+ * Click opens the marketplace. Slow Y rotation + hover bob, cobalt rim
+ * light so the Bondi-blue shell reads.
  */
-const PATH = "/models/imac_g3/imac_g3.glb";
+const PATH = "/models/imac_hq/imac_hq.glb";
 
 export function RetroScene() {
   const group = useRef<Group>(null);
@@ -42,7 +42,7 @@ export function RetroScene() {
       }}
     >
       <Center>
-        <primitive object={instance} scale={2.8} />
+        <primitive object={instance} scale={1} />
       </Center>
       {/* Cobalt accent light */}
       <pointLight position={[1.5, 1.2, 1.5]} color="#4a86ff" intensity={2.5} distance={5} decay={1.4} />
