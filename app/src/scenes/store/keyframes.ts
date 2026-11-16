@@ -1,83 +1,59 @@
 /**
- * Camera keyframes — reworked to match the approved reference stills.
+ * Narrative stops for the editorial scroll experience.
  *
- * Hero frame is the back wall interior: illuminated RECTANGLE'S wordmark
- * above a wide counter with the vendor and iMac G3. Facade is the exterior
- * approach; everything else is tight on the zone it names.
- *
- * Layout (world coords):
- *   - Back wall at Z = -7 hosts the wordmark + counter + vendor + iMac.
- *   - Left wall (X = -10): arcade cabinet + retro TV (Games).
- *   - Right wall (X = +10): skate deck grid with cobalt backlight.
- *   - Center merch tables with clothing display + vinyl crates.
- *   - Floor speakers flank the counter.
+ * Previously fed the 3D camera rig; now backs the DOM-only section layout.
+ * Kept as the source of truth for section ids, titles, and copy so that
+ * future reintroduction of 3D accents stays aligned.
  */
 
 export type Keyframe = {
   id: string;
   title: string;
   body: string;
-  position: [number, number, number];
-  lookAt: [number, number, number];
-  fov: number;
+  /** Collection slug when applicable, used for the editorial per-section stage. */
+  collection?: "skate" | "music" | "games" | "retro";
+  /** Accent color used for the stage of this section. */
+  accent?: string;
 };
 
 export const KEYFRAMES: Keyframe[] = [
   {
-    id: "facade",
-    title: "Facade",
-    body: "Rectangle's — the storefront. Warm lamps bleed through the window onto dark concrete.",
-    position: [0, 4.2, 18],
-    lookAt: [0, 4, 7],
-    fov: 55,
-  },
-  {
-    id: "entrance",
-    title: "Entrance",
-    body: "Step inside. The RECTANGLE'S sign glows at the back wall; the vendor is behind the counter.",
-    position: [0, 1.9, 5],
-    lookAt: [0, 2.5, -6.5],
-    fov: 58,
-  },
-  {
-    id: "overview",
-    title: "Explore",
-    body: "Skate, music, games, retro computing — one shared system.",
-    position: [2.5, 2.8, 2],
-    lookAt: [-1, 1.8, -5],
-    fov: 65,
+    id: "hero",
+    title: "Cultures that connect.",
+    body: "Skate, music, video games, and retro computing. One shared identity, four ways to take part.",
   },
   {
     id: "skate",
     title: "Skate",
-    body: "Deck wall backlit in cobalt. Pick a color.",
-    position: [6.5, 2.8, -1],
-    lookAt: [9.5, 3.2, -1.5],
-    fov: 50,
+    body: "Collect. Ride. Repeat. Boards, trucks, wheels, bearings — ready for the morning session.",
+    collection: "skate",
+    accent: "#17191b",
   },
   {
     id: "music",
     title: "Music",
-    body: "Floor speakers flanking the counter; vinyl crates in the center.",
-    position: [-3.5, 2.0, -0.8],
-    lookAt: [-4.3, 1.5, -3.5],
-    fov: 50,
+    body: "Grooves, speakers, formats. Rectangle's Sessions on vinyl; headphones at the counter.",
+    collection: "music",
+    accent: "#0b0b0b",
   },
   {
     id: "games",
     title: "Games",
-    body: "Arcade cabinet in the left bay. Night Shift running live.",
-    position: [-6.6, 1.9, -0.4],
-    lookAt: [-9, 1.7, -2],
-    fov: 45,
+    body: "Arcade, consoles, cartridges. Night Shift is running at the back cabinet.",
+    collection: "games",
+    accent: "#1d1d1f",
   },
   {
     id: "retro",
     title: "Retro Computing",
-    body: "Behind the counter, the iMac G3. Click it to shop.",
-    position: [-1.8, 1.9, -3.2],
-    lookAt: [-2.2, 1.6, -5.4],
-    fov: 38,
+    body: "Desktop culture. Boot the old Mac behind the counter to browse the shop.",
+    collection: "retro",
+    accent: "#2a4fa0",
+  },
+  {
+    id: "shop",
+    title: "Shop",
+    body: "Pick an item, finish the demo purchase, walk out with a Rectangle's bag. No real card is ever requested.",
   },
 ];
 

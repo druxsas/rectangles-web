@@ -1,35 +1,34 @@
-import { SceneCanvas } from "@/canvas/SceneCanvas";
 import { CheckoutOverlay } from "@/components/checkout-overlay";
-import { ScrollProgress, ScrollSections } from "@/components/scroll-sections";
+import { EditorialSections, ScrollProgress } from "@/components/editorial-sections";
 import { SiteNav } from "@/components/site-nav";
 
+/**
+ * Home — editorial scroll. One hero, four collection stages, a shop CTA.
+ * The 3D store scene is parked (see scenes/store/) and will come back as
+ * an optional accent in later iterations, not as the main experience.
+ */
 export default function Home() {
   return (
     <>
-      {/* 3D world sits behind everything */}
-      <SceneCanvas />
-
-      {/* Fixed way-finder */}
       <ScrollProgress />
-
-      {/* Persistent top navigation — basement-style strip */}
       <SiteNav />
 
-      {/* Scroll driver — seven 100vh slots, one per camera keyframe */}
-      <main className="relative z-10 pointer-events-none">
-        <ScrollSections />
+      <main className="relative z-10">
+        <EditorialSections />
       </main>
 
-      {/* Final hint */}
-      <footer
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 font-mono text-mono-sm uppercase pointer-events-none"
-        style={{ color: "#8e9196" }}
-      >
-        Scroll to walk through · click the iMac G3 to try checkout
-      </footer>
-
-      {/* Click-triggered demo checkout — never appears on the scroll path */}
+      {/* The iMac G3 shop remains available via the nav CTAs */}
       <CheckoutOverlay />
+
+      <footer
+        className="px-6 md:px-16 py-10 font-mono text-mono-sm uppercase tracking-wide flex items-center justify-between"
+        style={{ background: "#0a0b0d", color: "#565c62" }}
+      >
+        <span>Rectangle&apos;s — fictional portfolio project by Daniel Rolón · V0.1</span>
+        <a href="/styleguide" className="underline-offset-4 hover:underline" style={{ color: "#f7f7f3" }}>
+          Styleguide
+        </a>
+      </footer>
     </>
   );
 }
