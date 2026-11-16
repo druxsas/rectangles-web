@@ -119,7 +119,7 @@ export function Hotspots() {
                 else scrollToSection(index);
               }}
               className="hotspot block"
-              style={{ width: SIZE, height: SIZE, padding: 0, background: "none", border: 0, cursor: "pointer" }}
+              style={{ width: SIZE, height: SIZE, padding: 0, background: "none", border: 0, borderRadius: "50%", cursor: "pointer" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/ui/hotspot.webp" alt="" width={SIZE} height={SIZE} draggable={false} style={{ display: "block", pointerEvents: "none" }} />

@@ -1,54 +1,152 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 /**
- * Small square cursor that follows the mouse. Grows and flips color when
- * hovering anything with `data-cursor="hover"`. Uses mix-blend-difference
- * so it inverts over any background. Hidden on touch devices.
+ * Custom cursor (desktop only).
+ *
+ *  - Free: a small cobalt square that follows the mouse (difference blend,
+ *    so it inverts over any background).
+ *  - Over something interactive (`a`, `button`, `[data-cursor="hover"]`): it
+ *    morphs into that element's own shape — an outline that takes its size
+ *    and corner radius (a circle around a hotspot ring, a pill around a
+ *    button…) and leans slightly toward the pointer.
+ *  - Elements too large to frame (full cards, big panels) get the previous
+ *    behaviour: the square simply grows.
+ *
+ * Geometry is eased in a rAF loop and written straight to the node, so the
+ * outline keeps tracking elements that move with the 3D scene.
  */
+
+const BLUE = "#165dfa";
+const FREE = 12;
+const GROWN = 44;
+/** Outline gap around the element, px. */
+const PAD = 5;
+/** Largest element the cursor will wrap, px. */
+const MAX_W = 520;
+const MAX_H = 320;
+/** How far the outline leans toward the pointer (share of the offset from centre). */
+const LEAN = 0.1;
+
 export function CustomCursor() {
-  const [pos, setPos] = useState({ x: -50, y: -50 });
-  const [active, setActive] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const node = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (window.matchMedia("(pointer: coarse)").matches) return;
+    const el = node.current;
+    if (!el) return;
+
+    const mouse = { x: -50, y: -50 };
+    // Current eased box (centre + size + radius).
+    const box = { x: -50, y: -50, w: FREE, h: FREE, r: 0 };
+    let hovered: Element | null = null;
+    let visible = false;
+    let mode: "free" | "grown" | "shape" = "free";
+    let raf = 0;
 
     const onMove = (e: MouseEvent) => {
-      setPos({ x: e.clientX, y: e.clientY });
-      setVisible(true);
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      if (!visible) {
+        // First sighting: start at the pointer instead of flying in.
+        box.x = mouse.x;
+        box.y = mouse.y;
+        visible = true;
+        el.style.opacity = "1";
+      }
     };
     const onOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      const hovered = target?.closest("a, button, [data-cursor='hover']");
-      setActive(!!hovered);
+      hovered = (e.target as HTMLElement | null)?.closest("a, button, [data-cursor='hover']") ?? null;
     };
-    const onLeave = () => setVisible(false);
+    const onLeave = () => {
+      visible = false;
+      el.style.opacity = "0";
+    };
+
+    const radiusOf = (target: Element, w: number, h: number) => {
+      const raw = getComputedStyle(target).borderTopLeftRadius;
+      const v = parseFloat(raw) || 0;
+      const px = raw.endsWith("%") ? (v / 100) * Math.min(w, h) : v;
+      return Math.min(px, Math.min(w, h) / 2);
+    };
+
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      if (hovered && !hovered.isConnected) hovered = null;
+
+      let tx = mouse.x;
+      let ty = mouse.y;
+      let tw = FREE;
+      let th = FREE;
+      let tr = 0;
+      let next: typeof mode = "free";
+
+      if (hovered) {
+        const r = hovered.getBoundingClientRect();
+        if (r.width > 0 && r.width <= MAX_W && r.height <= MAX_H) {
+          next = "shape";
+          const cx = r.left + r.width / 2;
+          const cy = r.top + r.height / 2;
+          tx = cx + (mouse.x - cx) * LEAN;
+          ty = cy + (mouse.y - cy) * LEAN;
+          tw = r.width + PAD * 2;
+          th = r.height + PAD * 2;
+          const base = radiusOf(hovered, r.width, r.height);
+          // Keep circles circular and pills pill-shaped once padded.
+          tr = base >= Math.min(r.width, r.height) / 2 - 0.5 ? Math.min(tw, th) / 2 : base + (base > 0 ? PAD : 2);
+        } else {
+          next = "grown";
+          tw = th = GROWN;
+        }
+      }
+
+      // The free square sticks to the pointer; shapes ease into place.
+      const k = next === "shape" ? 0.26 : 1;
+      box.x += (tx - box.x) * k;
+      box.y += (ty - box.y) * k;
+      box.w += (tw - box.w) * 0.26;
+      box.h += (th - box.h) * 0.26;
+      box.r += (tr - box.r) * 0.26;
+
+      if (next !== mode) {
+        mode = next;
+        const shape = mode === "shape";
+        el.style.background = shape ? "rgba(22,93,250,0.08)" : BLUE;
+        el.style.boxShadow = shape ? `inset 0 0 0 2px ${BLUE}` : "none";
+        el.style.mixBlendMode = shape ? "normal" : "difference";
+      }
+      el.style.width = `${box.w}px`;
+      el.style.height = `${box.h}px`;
+      el.style.borderRadius = `${box.r}px`;
+      el.style.transform = `translate(${box.x - box.w / 2}px, ${box.y - box.h / 2}px)`;
+    };
 
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseover", onOver);
-    window.addEventListener("mouseleave", onLeave);
+    document.documentElement.addEventListener("mouseleave", onLeave);
+    raf = requestAnimationFrame(tick);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseover", onOver);
-      window.removeEventListener("mouseleave", onLeave);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
     };
   }, []);
 
-  const size = active ? 44 : 12;
   return (
     <div
+      ref={node}
       aria-hidden="true"
-      className="fixed top-0 left-0 z-[60] pointer-events-none transition-[width,height,opacity] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hidden md:block"
+      className="fixed top-0 left-0 z-[60] pointer-events-none hidden md:block"
       style={{
-        width: size,
-        height: size,
-        transform: `translate(${pos.x - size / 2}px, ${pos.y - size / 2}px)`,
-        background: "#165dfa",
+        width: FREE,
+        height: FREE,
+        background: BLUE,
         mixBlendMode: "difference",
-        opacity: visible ? 1 : 0,
-        willChange: "transform",
+        opacity: 0,
+        transition: "opacity 200ms ease, background 160ms ease, box-shadow 160ms ease",
+        willChange: "transform, width, height",
       }}
     />
   );
