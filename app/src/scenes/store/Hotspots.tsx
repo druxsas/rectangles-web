@@ -7,6 +7,7 @@ import { scrollToSection } from "@/components/smooth-scroll";
 import { IMAC, SCREEN } from "@/scenes/store/imacPose";
 import { KEYFRAMES } from "@/scenes/store/keyframes";
 import { useCheckout } from "@/stores/checkout";
+import { useListening } from "@/stores/listening";
 import { useScroll } from "@/stores/scroll";
 
 /**
@@ -19,7 +20,14 @@ import { useScroll } from "@/stores/scroll";
  * Scroll navigation is unchanged. Hidden on touch devices and while shopping.
  */
 
-type Spot = { stop: string; label: string; at: [number, number, number]; title?: string };
+type Spot = {
+  stop: string;
+  label: string;
+  at: [number, number, number];
+  title?: string;
+  /** Shown (always, not just on hover) when the ring is an action at its own stop. */
+  action?: string;
+};
 
 /** Shown only from the street: the door, leading inside. */
 const DOOR: Spot = { stop: "entrance", label: "Enter the store", title: "Enter", at: [0, 1.45, 5.05] };
@@ -27,7 +35,7 @@ const DOOR: Spot = { stop: "entrance", label: "Enter the store", title: "Enter",
 const SPOTS: Spot[] = [
   { stop: "games", label: "Games", at: [-5.45, 1.45, 2.1] },
   { stop: "skate", label: "Skate wall", at: [-5.75, 2.6, -2.0] },
-  { stop: "music", label: "Music", at: [5.6, 1.05, -1.0] },
+  { stop: "music", label: "Play the shop playlist", action: "Click to play", at: [5.6, 1.0, -1.0] },
   { stop: "shop", label: "Open the store", at: [IMAC.position[0], IMAC.position[1] + SCREEN.offset[1] + 0.02, IMAC.position[2]] },
   { stop: "handoff", label: "Pick up your bag", at: [1.15, 1.32, -3.6] },
 ];
@@ -42,7 +50,14 @@ const HOVER_CSS = `
   color:#f7f7f3;text-shadow:0 2px 18px rgba(0,0,0,.75);
   transform:translate(calc(-50% + var(--mx)), calc(8px + var(--my)));
   transition:opacity 180ms ease, transform 420ms cubic-bezier(.2,.8,.2,1)}
-.hotspot-wrap:hover .hotspot-label,.hotspot:focus-visible+.hotspot-label{opacity:1;transform:translate(calc(-50% + var(--mx)), var(--my))}
+.hotspot-wrap:hover .hotspot-label,.hotspot:focus-visible+.hotspot-label,.hotspot-action .hotspot-label{opacity:1;transform:translate(calc(-50% + var(--mx)), var(--my))}
+.hotspot-action .hotspot-label{font-size:26px}
+.play-chip{display:flex;align-items:center;gap:8px;padding:9px 14px 9px 11px;border-radius:22px;white-space:nowrap;
+  background:rgba(12,13,15,.86);border:1.5px solid #165dfa;color:#f7f7f3;
+  font-family:var(--font-mono),ui-monospace,monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+  animation:play-chip 1.8s ease-in-out infinite}
+@keyframes play-chip{0%,100%{box-shadow:0 0 0 0 rgba(22,93,250,.55)}50%{box-shadow:0 0 0 10px rgba(22,93,250,0)}}
+@media (prefers-reduced-motion: reduce){.play-chip{animation:none}}
 `;
 
 function useIsDesktop() {
@@ -68,14 +83,34 @@ export function Hotspots() {
   const section = useScroll((s) => Math.round(s.stop));
   const inside = useScroll((s) => isInside(s.stop));
   const purchased = useCheckout((s) => s.purchased);
+  const listening = useListening((s) => s.isOpen);
+  const openPlaylist = useListening((s) => s.open);
+  const musicIndex = KEYFRAMES.findIndex((k) => k.id === "music");
 
   // A ring can vanish under the cursor (new stop, store opened) without a
   // pointerleave — release the frozen view whenever that can happen.
   useEffect(() => {
     pointer.hold = false;
-  }, [section, shopping, inside]);
+  }, [section, shopping, inside, listening]);
 
-  if (!desktop || shopping) return null;
+  if (shopping || listening) return null;
+
+  // Touch devices keep the scroll-only walkthrough, with one exception: at
+  // the music stop a chip on the turntable says it can be tapped.
+  if (!desktop) {
+    if (section !== musicIndex) return null;
+    return (
+      <Html position={[5.6, 1.12, -1.0]} center zIndexRange={[15, 0]}>
+        <button type="button" className="play-chip" onClick={openPlaylist} aria-label="Play the shop playlist">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor" aria-hidden>
+            <path d="M3 1l8 5-8 5z" />
+          </svg>
+          Tap to play
+        </button>
+        <style>{HOVER_CSS}</style>
+      </Html>
+    );
+  }
 
   // From the street only the door ring shows; inside, the shop's areas.
   const spots = inside ? SPOTS : [DOOR];
@@ -85,14 +120,16 @@ export function Hotspots() {
       {spots.map((spot) => {
         const index = KEYFRAMES.findIndex((k) => k.id === spot.stop);
         const here = index === section;
-        // At the current stop only the iMac keeps its ring (it opens the store).
-        if (here && spot.stop !== "shop") return null;
+        // At the current stop only the action rings stay: the iMac (opens
+        // the store) and the turntable (opens the playlist).
+        if (here && spot.stop !== "shop" && !spot.action) return null;
+        const acting = here && !!spot.action;
         // The bag handoff only exists after the demo checkout.
         if (spot.stop === "handoff" && !purchased) return null;
         return (
           <Html key={spot.stop} position={spot.at} center zIndexRange={[15, 0]}>
             <div
-              className="hotspot-wrap"
+              className={acting ? "hotspot-wrap hotspot-action" : "hotspot-wrap"}
               onPointerEnter={() => (pointer.hold = true)}
               onPointerLeave={(e) => {
                 pointer.hold = false;
@@ -115,7 +152,8 @@ export function Hotspots() {
               title={here ? spot.label : KEYFRAMES[index].title}
               onClick={() => {
                 pointer.hold = false;
-                if (here) open();
+                if (acting) openPlaylist();
+                else if (here) open();
                 else scrollToSection(index);
               }}
               className="hotspot block"
@@ -126,7 +164,7 @@ export function Hotspots() {
             </button>
             {/* Section name as a title on hover (brandbook display type) */}
             <span className="hotspot-label" aria-hidden>
-              {spot.title ?? KEYFRAMES[index].title}
+              {acting ? spot.action : (spot.title ?? KEYFRAMES[index].title)}
             </span>
             </div>
             <style>{HOVER_CSS}</style>

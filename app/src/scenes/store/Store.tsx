@@ -8,6 +8,8 @@ import { IMAC } from "@/scenes/store/imacPose";
 import { useTvTexture } from "@/scenes/store/TvScreen";
 import { Exterior } from "@/scenes/store/Exterior";
 import { LogoPlane } from "@/scenes/store/LogoPlane";
+import { RecordCrate } from "@/scenes/store/RecordCrate";
+import { useListening } from "@/stores/listening";
 import { Deck, type DeckArtName } from "@/scenes/store/DeckArt";
 import { WallPosters } from "@/scenes/store/Posters";
 import { TrackLighting } from "@/scenes/store/Lighting";
@@ -462,6 +464,7 @@ function SkateZone() {
 // ================================================================
 function MusicZone() {
   const high = useQuality((q) => q.tier) === "high";
+  const openPlaylist = useListening((s) => s.open);
   const wallX = HALF_W;
   const cz = -1.0;
   return (
@@ -472,7 +475,29 @@ function MusicZone() {
         <boxGeometry args={[0.42, 0.72, 0.58]} />
         <meshStandardMaterial color="#1c120c" roughness={0.6} />
       </mesh>
-      <RecordPlayerHQ position={[wallX - 0.37, 0.72, cz]} rotation={[0, -Math.PI / 2, 0]} />
+      {/* Click the turntable to open the Rectangle's Sessions playlist */}
+      <RecordPlayerHQ
+        position={[wallX - 0.37, 0.72, cz]}
+        rotation={[0, -Math.PI / 2, 0]}
+        onClick={(e) => {
+          e.stopPropagation();
+          document.body.style.cursor = "";
+          openPlaylist();
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "";
+        }}
+      />
+      {/* The store's record crate, full of LPs, on a low stand beside the towers */}
+      <mesh position={[wallX - 0.45, 0.24, cz - 1.2]} castShadow receiveShadow>
+        <boxGeometry args={[0.56, 0.48, 0.66]} />
+        <meshStandardMaterial color="#1c120c" roughness={0.6} />
+      </mesh>
+      <RecordCrate position={[wallX - 0.47, 0.48, cz - 1.2]} rotation={[0, -Math.PI / 2 - 0.12, 0]} />
       {/* Warm accent grazing the speakers */}
       {high && <pointLight position={[wallX - 1.4, 2.4, cz]} color={COL.warm} intensity={2.2} distance={4} decay={1.6} />}
     </group>

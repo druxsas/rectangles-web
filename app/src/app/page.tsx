@@ -6,6 +6,7 @@ import { LookArrows } from "@/components/look-arrows";
 import { SiteNav } from "@/components/site-nav";
 import { HideWhenShopping } from "@/components/store/HideWhenShopping";
 import { ShoppingMode } from "@/components/store/ShoppingMode";
+import { ListeningPanel } from "@/components/music/ListeningPanel";
 
 /**
  * Home — immersive 3D walkthrough of the Rectangle's store.
@@ -22,6 +23,7 @@ export default function Home() {
       <LoadingReveal />
       <CustomCursor />
       <ShoppingMode />
+      <ListeningPanel />
       <LookArrows />
       <HideWhenShopping>
         <ScrollProgress />

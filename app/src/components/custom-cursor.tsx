@@ -74,6 +74,14 @@ export function CustomCursor() {
       }
     };
     const onOver = (e: MouseEvent) => {
+      // Inside an iframe (the playlist player) the page stops receiving mouse
+      // events: hide instead of freezing on its edge. The next move restores it.
+      if ((e.target as HTMLElement | null)?.tagName === "IFRAME") {
+        visible = false;
+        el.style.opacity = "0";
+        hovered = null;
+        return;
+      }
       hovered = (e.target as HTMLElement | null)?.closest("a, button, [data-cursor='hover']") ?? null;
     };
     const onLeave = () => {

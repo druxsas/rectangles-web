@@ -8,6 +8,7 @@ import { ARROW_DEG, MAX_DEG, isInside, mouseYawDeg, pointer, useLook } from "@/c
 import { SCREEN, ZOOM_SECONDS, screenFrame } from "@/scenes/store/imacPose";
 import { KEYFRAMES } from "@/scenes/store/keyframes";
 import { useCheckout } from "@/stores/checkout";
+import { useListening } from "@/stores/listening";
 import { useScroll } from "@/stores/scroll";
 import { useQuality } from "@/canvas/quality";
 import { useTravel } from "@/stores/travel";
@@ -35,6 +36,17 @@ const TRAVEL_RELEASE = 1.2;
 function ease(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
+
+/**
+ * Listening pose: close on the turntable. On landscape screens the playlist
+ * window covers the right side, so the view is aimed to the player's right
+ * and it lands left of centre; on portrait the window is a bottom sheet, so
+ * the view is aimed below it and it lands in the upper part.
+ */
+const LISTEN_SECONDS = 1.2;
+const LISTEN_FOV = 40;
+const LISTEN_WIDE = { pos: new Vector3(4.55, 1.28, -0.8), look: new Vector3(5.63, 0.78, -0.62) };
+const LISTEN_TALL = { pos: new Vector3(4.2, 1.15, -1.0), look: new Vector3(5.63, 0.3, -1.0) };
 
 /** Field of view used when looking at the iMac display. */
 const SCREEN_FOV = 34;
@@ -67,6 +79,8 @@ type RigState = {
   travelLastFov: number;
   /** 1 right after a flight ends, decaying to 0 — blends back onto the path. */
   travelRelease: number;
+  /** 0 walking → 1 close on the turntable. */
+  listen: number;
 };
 
 /** Keyframe fovs are authored for a 16:10 desktop viewport. */
@@ -141,7 +155,8 @@ function step(
   }
 
   // --- Desktop look-around (mouse + arrows), inside the shop only
-  const open0 = useCheckout.getState().isOpen;
+  const listening = useListening.getState().isOpen;
+  const open0 = useCheckout.getState().isOpen || listening;
   const yawTarget =
     pointer.active && isInside(stop) && !open0
       ? MathUtils.clamp(useLook.getState().step * ARROW_DEG + mouseYawDeg(pointer.x), -MAX_DEG, MAX_DEG)
@@ -155,9 +170,9 @@ function step(
 
   // --- Shopping blend
   const open = useCheckout.getState().isOpen;
-  if (open !== rig.locked) {
-    rig.locked = open;
-    setScrollLocked(open);
+  if ((open || listening) !== rig.locked) {
+    rig.locked = open || listening;
+    setScrollLocked(rig.locked);
   }
   const target = open ? 1 : 0;
   rig.blend = reducedMotion
@@ -175,11 +190,23 @@ function step(
   outLook.copy(pathLook).lerp(screen.center, w);
   outUp.copy(WORLD_UP).lerp(screen.up, w).normalize();
 
+  // --- Listening blend (turntable close-up)
+  const listenTarget = listening ? 1 : 0;
+  rig.listen = reducedMotion
+    ? listenTarget
+    : MathUtils.clamp(rig.listen + Math.sign(listenTarget - rig.listen) * (dt / LISTEN_SECONDS), 0, 1);
+  const wl = ease(rig.listen);
+  if (wl > 0) {
+    const pose = aspect < 1 ? LISTEN_TALL : LISTEN_WIDE;
+    outPos.lerp(pose.pos, wl);
+    outLook.lerp(pose.look, wl);
+  }
+
   camera.position.copy(outPos);
   camera.up.copy(outUp);
   camera.lookAt(outLook);
 
-  const fov = MathUtils.lerp(pathFov, SCREEN_FOV, w);
+  const fov = MathUtils.lerp(MathUtils.lerp(pathFov, SCREEN_FOV, w), LISTEN_FOV, wl);
   if (Math.abs(camera.fov - fov) > 0.01) {
     camera.fov = fov;
     camera.updateProjectionMatrix();
@@ -203,6 +230,7 @@ export function CameraRig() {
     stillSince: 0,
     lowRes: false,
     blend: 0,
+    listen: 0,
     locked: false,
     yaw: 0,
     traveling: false,
