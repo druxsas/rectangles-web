@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { displayFont, drawLogo, whenBrandReady } from "@/scenes/store/brandCanvas";
+import { useScroll } from "@/stores/scroll";
+import { useQuality } from "@/canvas/quality";
 import { CanvasTexture, LinearFilter, SRGBColorSpace, VideoTexture, type Texture } from "three";
 
 /**
@@ -54,13 +56,35 @@ function useIdleTexture() {
 export function useTvTexture(playlist: string[] = TV_PLAYLIST): Texture {
   const idle = useIdleTexture();
   const [video, setVideo] = useState<VideoTexture | null>(null);
+  const [wanted, setWanted] = useState(false);
+
+  // Don't compete with the 3D assets on first load: start fetching the clip
+  // once the visitor begins walking in (or after a short idle at the facade).
+  useEffect(() => {
+    if (wanted) return;
+    const go = () => setWanted(true);
+    const t = window.setTimeout(go, 6000);
+    const unsub = useScroll.subscribe((s) => {
+      if (s.progress > 0.01) go();
+    });
+    return () => {
+      window.clearTimeout(t);
+      unsub();
+    };
+  }, [wanted]);
 
   useEffect(() => {
+    if (!wanted) return;
+    // Phones: one clip on loop. Desktop: the playlist, each clip fetched
+    // once into a blob URL — swapping `src` to a network URL re-downloads
+    // the whole file on every cycle.
+    const clips = useQuality.getState().tier === "low" ? playlist.slice(0, 1) : playlist;
+    const blobs: string[] = [];
+    let cancelled = false;
     const el = document.createElement("video");
     let index = 0;
-    el.src = playlist[index];
     el.crossOrigin = "anonymous";
-    el.loop = playlist.length === 1;
+    el.loop = clips.length === 1;
     el.muted = true;
     el.playsInline = true;
     el.preload = "auto";
@@ -78,23 +102,38 @@ export function useTvTexture(playlist: string[] = TV_PLAYLIST): Texture {
       if (!reduced) el.play().catch(() => {});
     };
     const onEnded = () => {
-      index = (index + 1) % playlist.length;
-      el.src = playlist[index];
+      index = (index + 1) % clips.length;
+      el.src = blobs[index];
       el.play().catch(() => {});
     };
     el.addEventListener("loadeddata", onReady, { once: true });
     el.addEventListener("ended", onEnded);
-    el.load();
+
+    // Fetch clips sequentially; start playback as soon as the first one lands.
+    (async () => {
+      for (const url of clips) {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        if (cancelled) return;
+        blobs.push(URL.createObjectURL(blob));
+        if (blobs.length === 1) {
+          el.src = blobs[0];
+          el.load();
+        }
+      }
+    })().catch(() => {});
 
     return () => {
+      cancelled = true;
       el.removeEventListener("loadeddata", onReady);
       el.removeEventListener("ended", onEnded);
       el.pause();
       el.removeAttribute("src");
       el.load();
       tex?.dispose();
+      blobs.forEach((b) => URL.revokeObjectURL(b));
     };
-  }, [playlist]);
+  }, [playlist, wanted]);
 
   return video ?? idle;
 }

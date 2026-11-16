@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { Object3D } from "three";
 import { HokasuTrack } from "@/scenes/store/models";
+import { useQuality } from "@/canvas/quality";
 
 /**
  * Ceiling track lighting (HOKASU Tube Clip modules), replacing the old
@@ -48,6 +49,7 @@ function TrackSpot({ from, to }: { from: [number, number, number]; to: [number, 
 }
 
 export function TrackLighting() {
+  const high = useQuality((s) => s.tier) === "high";
   return (
     <group>
       {MODULES.map((m, i) => (
@@ -56,9 +58,13 @@ export function TrackLighting() {
           <TrackSpot from={[m.x + m.side * 0.9, MOUNT_Y, m.z]} to={m.target} />
         </group>
       ))}
-      {/* Warm fill for the centre aisle (no visible fixture) */}
-      <pointLight position={[0, 3.6, 0.2]} color="#ffbc7a" intensity={2.2} distance={9} decay={1.5} />
-      <pointLight position={[0, 3.6, -2.6]} color="#ffbc7a" intensity={1.4} distance={6} decay={1.6} />
+      {/* Warm fill for the centre aisle (no visible fixture) — high tier only */}
+      {high && (
+        <>
+          <pointLight position={[0, 3.6, 0.2]} color="#ffbc7a" intensity={2.2} distance={9} decay={1.5} />
+          <pointLight position={[0, 3.6, -2.6]} color="#ffbc7a" intensity={1.4} distance={6} decay={1.6} />
+        </>
+      )}
     </group>
   );
 }

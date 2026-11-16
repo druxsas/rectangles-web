@@ -61,6 +61,12 @@ export type ModelProps = {
   textures?: Record<string, Texture>;
   /** Glow of texture-override screens (default 1.4; lower for video). */
   screenIntensity?: number;
+  /**
+   * Per-instance base-colour maps keyed by material name — keeps the
+   * original material (roughness, normals…) and only swaps its `map`
+   * (e.g. a different graphic on each skate deck).
+   */
+  maps?: Record<string, Texture>;
   onClick?: (e: { stopPropagation: () => void }) => void;
   onPointerOver?: (e: { stopPropagation: () => void }) => void;
   onPointerOut?: () => void;
@@ -73,6 +79,7 @@ function normalize(
   spec: ModelSpec,
   textures?: Record<string, Texture>,
   screenIntensity = 1.4,
+  maps?: Record<string, Texture>,
 ): Group {
   const root = source.clone(true);
 
@@ -103,7 +110,15 @@ function normalize(
           name,
         });
       }
-      return spec.materials?.(name, m as MeshStandardMaterial) ?? m;
+      const base = spec.materials?.(name, m as MeshStandardMaterial) ?? m;
+      const map = maps?.[name];
+      if (map && (base as MeshStandardMaterial).isMeshStandardMaterial) {
+        const art = (base as MeshStandardMaterial).clone();
+        art.map = map;
+        art.color.set("#ffffff");
+        return art;
+      }
+      return base;
     };
     mesh.material = Array.isArray(mesh.material) ? mesh.material.map(swap) : swap(mesh.material);
   });
@@ -131,11 +146,11 @@ function normalize(
 }
 
 function model(path: string, spec: ModelSpec) {
-  function Model({ position, rotation, textures, screenIntensity, onClick, onPointerOver, onPointerOut }: ModelProps) {
+  function Model({ position, rotation, textures, screenIntensity, maps, onClick, onPointerOver, onPointerOut }: ModelProps) {
     const { scene } = useGLTF(path);
     const instance = useMemo(
-      () => normalize(scene, spec, textures, screenIntensity),
-      [scene, textures, screenIntensity],
+      () => normalize(scene, spec, textures, screenIntensity, maps),
+      [scene, textures, screenIntensity, maps],
     );
     const spinning = useMemo(() => {
       if (!spec.spin || typeof window === "undefined") return null;
@@ -203,7 +218,7 @@ const marble = new MeshPhysicalMaterial({ color: "#dcd9d2", roughness: 0.25, cle
 // ----------------------------------------------------------------
 
 /** Complete skateboard, lying flat, wheels down. 0.81 m long in source. */
-export const SkateHQ = model("/models/skate_hq/skate_hq.glb", { fit: { depth: 0.81 } });
+export const SkateHQ = model("/models/opt/skate_hq.glb", { fit: { depth: 0.81 } });
 
 /**
  * Modern all-in-one iMac with keyboard + mouse, from the user's FBX
@@ -214,7 +229,7 @@ export const SkateHQ = model("/models/skate_hq/skate_hq.glb", { fit: { depth: 0.
  */
 const bezelBlack = new MeshPhysicalMaterial({ color: "#050506", roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.08 });
 const graySatin = new MeshStandardMaterial({ color: "#8d9095", roughness: 0.5, metalness: 0.4 });
-export const ImacHQ = model("/models/imac/imac.glb", {
+export const ImacHQ = model("/models/opt/imac.glb", {
   fit: { width: 0.62 },
   materials: (name, m) => {
     switch (name) {
@@ -243,7 +258,7 @@ export const ImacHQ = model("/models/imac/imac.glb", {
  * cabinet is finished in black lacquer with a cobalt control deck, and the
  * "Street_Fighter_II" screen plane accepts a live texture via `textures`.
  */
-export const ArcadeHQ = model("/models/arcade_hq/arcade_hq.glb", {
+export const ArcadeHQ = model("/models/opt/arcade_hq.glb", {
   fit: { height: 1.82 },
   materials: (name) => {
     if (name === "Caja") return lacquerInk;
@@ -260,7 +275,7 @@ export const ArcadeHQ = model("/models/arcade_hq/arcade_hq.glb", {
  * merged copy; the right is built from parts — both are kept so the file
  * renders as a matched stereo pair. White MTL sides become black walnut.
  */
-export const SpeakerPairHQ = model("/models/speaker_hq/speaker_hq.glb", {
+export const SpeakerPairHQ = model("/models/opt/speaker_hq.glb", {
   fit: { height: 1.12 },
   materials: (name, m) => {
     if (name.startsWith("material_wood_black_speaker")) return walnut;
@@ -272,7 +287,7 @@ export const SpeakerPairHQ = model("/models/speaker_hq/speaker_hq.glb", {
 });
 
 /** Rectangle's kraft shopping bag. Front faces ±X in source. */
-export const PaperBagHQ = model("/models/paper_bag/paper_bag.glb", {
+export const PaperBagHQ = model("/models/opt/paper_bag.glb", {
   fit: { height: 0.44 },
   materials: (name) => {
     if (name === "Material_Paper") return kraft;
@@ -288,7 +303,7 @@ export const PaperBagHQ = model("/models/paper_bag/paper_bag.glb", {
  * a chin strip that showed as lines under video, so it renders black and
  * the picture is a separate plane laid over it (see Store.tsx).
  */
-export const TvHQ = model("/models/tv/tv.glb", {
+export const TvHQ = model("/models/opt/tv.glb", {
   fit: { width: 1.35 },
   hide: ["TV001", "TV_1_Stand"],
   materials: (name) => {
@@ -309,7 +324,7 @@ const lensWarm = new MeshStandardMaterial({
   emissiveIntensity: 3,
   toneMapped: false,
 });
-export const HokasuTrack = model("/models/hokasu/hokasu.glb", {
+export const HokasuTrack = model("/models/opt/hokasu.glb", {
   fit: { depth: 2.61 },
   hide: ["HOKASU_Tube_Clip_TR4-001", "HOKASU_Tube_Clip_TR4-002"],
   castShadow: false,
@@ -375,7 +390,7 @@ function sessionsLabelTexture() {
  * `scripts/blender/blend_to_glb.py`). Wooden plinth, turquoise platter,
  * front amp panel. Front faces +Z. The record spins at 33⅓ rpm.
  */
-export const RecordPlayerHQ = model("/models/record_player/record_player.glb", {
+export const RecordPlayerHQ = model("/models/opt/record_player.glb", {
   fit: { width: 0.53 },
   spin: { node: "Cylinder010", rpm: 33.33 },
   materials: (name, m) => {
@@ -391,7 +406,7 @@ export const RecordPlayerHQ = model("/models/record_player/record_player.glb", {
  * light field with a black frame, echoing the framed mark. Exported with
  * `obj_to_glb.py --keep Simla_Bordered_Rugs_004 --texture …Snow-Charcoal…`.
  */
-export const RugHQ = model("/models/rug/rug.glb", {
+export const RugHQ = model("/models/opt/rug.glb", {
   fit: { depth: 4.0 },
   castShadow: false,
 });
@@ -405,7 +420,7 @@ export const RugHQ = model("/models/rug/rug.glb", {
  * the mesh, textures downscaled). The white tee is tinted to the storyboard's
  * black tee; eyelash/brow cards use alpha-tested PNG.
  */
-export const WilliamHQ = model("/models/william/william.glb", {
+export const WilliamHQ = model("/models/opt/william.glb", {
   fit: { height: 1.76 },
   materials: (name, m) => {
     if (name === "will_tshirt") {
@@ -428,7 +443,7 @@ export const WilliamHQ = model("/models/william/william.glb", {
  * user-supplied. Source textures were not shipped with the OBJ, so leaves,
  * stems, pots, soil and marble get brand-palette materials.
  */
-export const PlantsHQ = model("/models/plants_hq/plants_hq.glb", {
+export const PlantsHQ = model("/models/opt/plants_hq.glb", {
   fit: { height: 1.9 },
   materials: (name) => {
     if (name === "Material__8") return leaf;
@@ -439,4 +454,4 @@ export const PlantsHQ = model("/models/plants_hq/plants_hq.glb", {
     return undefined;
   },
 });
-export const TurntableModel = model("/models/turntable/turntable.glb", { fit: { width: 0.46 } });
+export const TurntableModel = model("/models/opt/turntable.glb", { fit: { width: 0.46 } });

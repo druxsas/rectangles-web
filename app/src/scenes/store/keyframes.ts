@@ -47,8 +47,8 @@ export const KEYFRAMES: Keyframe[] = [
     id: "skate",
     title: "Skate",
     body: "Completes on the wall. Deck, trucks, wheels and bearings included.",
-    position: [-2.3, 1.5, -1.2],
-    lookAt: [-6, 1.3, -1.45],
+    position: [-2.3, 1.6, -1.2],
+    lookAt: [-6, 1.7, -1.45],
     fov: 52,
   },
   {

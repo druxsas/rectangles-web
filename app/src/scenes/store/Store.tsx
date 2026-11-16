@@ -8,6 +8,7 @@ import { IMAC } from "@/scenes/store/imacPose";
 import { useTvTexture } from "@/scenes/store/TvScreen";
 import { Exterior } from "@/scenes/store/Exterior";
 import { LogoPlane } from "@/scenes/store/LogoPlane";
+import { Deck, type DeckArtName } from "@/scenes/store/DeckArt";
 import { WallPosters } from "@/scenes/store/Posters";
 import { TrackLighting } from "@/scenes/store/Lighting";
 import {
@@ -16,7 +17,6 @@ import {
   PaperBagHQ,
   PlantsHQ,
   RugHQ,
-  SkateHQ,
   SpeakerPairHQ,
   RecordPlayerHQ,
   TvHQ,
@@ -24,6 +24,7 @@ import {
 } from "@/scenes/store/models";
 import { useShellTextures, type PbrSet } from "@/scenes/store/useShellTextures";
 import { useCheckout } from "@/stores/checkout";
+import { useQuality } from "@/canvas/quality";
 
 /**
  * Rectangle's store interior — the immersive walkthrough scene.
@@ -325,7 +326,7 @@ function BackWallHero() {
       </group>
 
       {/* A complete on the counter beside the bag (storyboard 11) */}
-      <SkateHQ position={[1.85, counterH, counterZ + 0.05]} rotation={[0, 1.35, 0]} />
+      <Deck art="02-classic-outline" position={[1.85, counterH, counterZ + 0.05]} rotation={[0, 1.35, 0]} />
 
       {/* Rectangle's kraft bag waiting on the counter */}
       <group position={[1.15, counterH, counterZ + 0.1]} rotation={[0, -Math.PI / 2 + 0.25, 0]}>
@@ -347,26 +348,42 @@ function SkateZone() {
   const wallX = -HALF_W;
   const cz = -2.0;
   const cy = 1.75;
-  const decks = [-0.825, -0.275, 0.275, 0.825];
+  // Two rows of five completes (row offsets in metres above the base row).
+  const ROW_GAP = 0.88;
+  const decks: [number, number, DeckArtName][] = [
+    [0, -1.0, "01-classic-ivory"],
+    [0, -0.5, "04-offset-label"],
+    [0, 0, "08-blue-label"],
+    [0, 0.5, "06-nested-frames"],
+    [0, 1.0, "10-archive-stripes"],
+    [ROW_GAP, -1.0, "03-inverted-paper"],
+    [ROW_GAP, -0.5, "07-split-field"],
+    [ROW_GAP, 0, "12-halftone-concrete"],
+    [ROW_GAP, 0.5, "05-repeat-type"],
+    [ROW_GAP, 1.0, "02-classic-outline"],
+  ];
+  // Lightbox grown to hold both rows.
+  const boxY = 1.82;
+  const boxH = 1.96;
 
   return (
     <group>
       {/* Lightbox: black frame + glowing cobalt face */}
-      <mesh position={[wallX + 0.04, cy, cz]} rotation={[0, Math.PI / 2, 0]}>
-        <boxGeometry args={[2.9, 1.9, 0.06]} />
+      <mesh position={[wallX + 0.04, boxY, cz]} rotation={[0, Math.PI / 2, 0]}>
+        <boxGeometry args={[2.9, boxH + 0.14, 0.06]} />
         <meshStandardMaterial color={COL.frame} roughness={0.5} />
       </mesh>
-      <mesh position={[wallX + 0.075, cy, cz]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[2.76, 1.76]} />
+      <mesh position={[wallX + 0.075, boxY, cz]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[2.76, boxH]} />
         <meshStandardMaterial color="#000" emissive={COL.cobalt} emissiveIntensity={0.55} toneMapped={false} />
       </mesh>
-      <pointLight position={[wallX + 1.1, cy, cz]} color={COL.cobalt} intensity={2.2} distance={4} decay={1.6} />
+      <pointLight position={[wallX + 1.1, boxY, cz]} color={COL.cobalt} intensity={2.2} distance={4} decay={1.6} />
 
-      {/* Wall-mounted decks: graphic out, wheels toward the room */}
-      {decks.map((dz) => (
-        <group key={dz} position={[wallX + 0.24, cy, cz + dz]} rotation={[0, Math.PI / 2, 0]}>
+      {/* Wall-mounted decks: bottom graphic toward the room (Images/Skate_Arts) */}
+      {decks.map(([dy, dz, art]) => (
+        <group key={`${dy}:${dz}`} position={[wallX + 0.24, cy + dy, cz + dz]} rotation={[0, Math.PI / 2, 0]}>
           <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.4, 0]}>
-            <SkateHQ />
+            <Deck art={art} />
           </group>
         </group>
       ))}
@@ -376,7 +393,12 @@ function SkateZone() {
         <boxGeometry args={[0.7, 0.4, 1.2]} />
         <meshStandardMaterial color="#e9e6df" roughness={0.6} />
       </mesh>
-      <SkateHQ position={[wallX + 1.25, 0.4, cz]} rotation={[0, 0.35, 0]} />
+      {/* Hero deck shown graphic-up (wheels up), like a shop display */}
+      <group position={[wallX + 1.25, 0.4 + 0.125, cz]} rotation={[0, 0.35 + Math.PI, 0]}>
+        <group rotation={[0, 0, Math.PI]}>
+          <Deck art="09-editorial-type" />
+        </group>
+      </group>
     </group>
   );
 }
@@ -385,6 +407,7 @@ function SkateZone() {
 // Music — speaker pair + turntable console (right wall)
 // ================================================================
 function MusicZone() {
+  const high = useQuality((q) => q.tier) === "high";
   const wallX = HALF_W;
   const cz = -1.0;
   return (
@@ -397,7 +420,7 @@ function MusicZone() {
       </mesh>
       <RecordPlayerHQ position={[wallX - 0.37, 0.72, cz]} rotation={[0, -Math.PI / 2, 0]} />
       {/* Warm accent grazing the speakers */}
-      <pointLight position={[wallX - 1.4, 2.4, cz]} color={COL.warm} intensity={2.2} distance={4} decay={1.6} />
+      {high && <pointLight position={[wallX - 1.4, 2.4, cz]} color={COL.warm} intensity={2.2} distance={4} decay={1.6} />}
     </group>
   );
 }

@@ -10,7 +10,7 @@ import type { Group, Mesh } from "three";
  * vinyl record built from primitives. The vinyl rotates on its own axis;
  * the whole pair pans subtly.
  */
-const SPEAKER_PATH = "/models/speaker_hq/speaker_hq.glb";
+const SPEAKER_PATH = "/models/opt/speaker_hq.glb";
 
 export function MusicScene() {
   const group = useRef<Group>(null);

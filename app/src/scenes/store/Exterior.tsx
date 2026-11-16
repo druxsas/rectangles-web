@@ -6,8 +6,10 @@ import { useRef } from "react";
 import { SRGBColorSpace, type Group, type Texture } from "three";
 import { FramedMark } from "@/scenes/store/FramedMark";
 import { KEYFRAMES } from "@/scenes/store/keyframes";
-import { PlantsHQ, SkateHQ } from "@/scenes/store/models";
+import { Deck } from "@/scenes/store/DeckArt";
+import { PlantsHQ } from "@/scenes/store/models";
 import { useScroll } from "@/stores/scroll";
+import { useQuality } from "@/canvas/quality";
 
 /**
  * Storefront street dressing, after storyboard frames 01–02:
@@ -161,6 +163,7 @@ function AFrameBoard({ position, rotation }: { position: [number, number, number
 }
 
 export function Exterior() {
+  const high = useQuality((s) => s.tier) === "high";
   return (
     <group>
       <DoorLeaf side={-1} />
@@ -184,7 +187,7 @@ export function Exterior() {
       ))}
 
       {/* Warm graze so the lettering reads as painted on the wall, not floating */}
-      <pointLight position={[7.1, 3.4, FRONT_Z + 0.9]} color="#ffbc7a" intensity={2.2} distance={4.5} decay={1.6} />
+      {high && <pointLight position={[7.1, 3.4, FRONT_Z + 0.9]} color="#ffbc7a" intensity={2.2} distance={4.5} decay={1.6} />}
 
       {/* Sidewalk dressing */}
       <PlantsHQ position={[-7.1, 0, 6.2]} rotation={[0, 0.9, 0]} />
@@ -194,7 +197,7 @@ export function Exterior() {
       <group position={[-5.45, 0, FRONT_Z + 0.32]} rotation={[0, 0.2, 0]}>
         {/* Tail on the ground, nose tipped back against the wall */}
         <group rotation={[-Math.PI / 2 - 0.22, 0, 0]} position={[0, 0.02, 0]}>
-          <SkateHQ position={[0, 0, 0.4]} />
+          <Deck art="11-sticker-composition" position={[0, 0, 0.4]} />
         </group>
       </group>
       <AFrameBoard position={[2.3, 0, FRONT_Z + 1.2]} rotation={-0.35} />
