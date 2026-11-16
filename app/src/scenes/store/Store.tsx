@@ -11,6 +11,7 @@ import { LogoPlane } from "@/scenes/store/LogoPlane";
 import { Deck, type DeckArtName } from "@/scenes/store/DeckArt";
 import { WallPosters } from "@/scenes/store/Posters";
 import { TrackLighting } from "@/scenes/store/Lighting";
+import { Hotspots } from "@/scenes/store/Hotspots";
 import {
   ArcadeHQ,
   ImacHQ,
@@ -467,6 +468,7 @@ export function Store() {
       <Exterior />
       <WallPosters />
       <TrackLighting />
+      <Hotspots />
       <BackWallHero />
       <SkateZone />
       <MusicZone />

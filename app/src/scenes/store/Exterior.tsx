@@ -5,7 +5,6 @@ import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import { SRGBColorSpace, type Group, type Texture } from "three";
 import { FramedMark } from "@/scenes/store/FramedMark";
-import { KEYFRAMES } from "@/scenes/store/keyframes";
 import { Deck } from "@/scenes/store/DeckArt";
 import { PlantsHQ } from "@/scenes/store/models";
 import { useScroll } from "@/stores/scroll";
@@ -29,15 +28,14 @@ const FRONT_Z = 5;
 const DOOR_HALF = 0.85;
 const DOOR_H = 2.68;
 const OPEN = (72 * Math.PI) / 180;
-const SEGMENTS = KEYFRAMES.length - 1;
 
 /**
  * Door opening driven by scroll: closed while lingering on the facade, fully
  * open before the camera reaches the threshold (it crosses the door line at
  * roughly 75% of the facade → entrance segment).
  */
-function doorOpenAmount(progress: number) {
-  const f = progress * SEGMENTS; // 0 = facade, 1 = entrance
+function doorOpenAmount(stop: number) {
+  const f = stop; // 0 = facade, 1 = entrance
   const t = Math.min(Math.max((f - 0.12) / 0.4, 0), 1);
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
@@ -55,7 +53,7 @@ function DoorLeaf({ side, decal }: { side: -1 | 1; decal?: boolean }) {
   const leaf = useRef<Group>(null);
   useFrame(() => {
     if (!leaf.current) return;
-    leaf.current.rotation.y = side * OPEN * doorOpenAmount(useScroll.getState().progress);
+    leaf.current.rotation.y = side * OPEN * doorOpenAmount(useScroll.getState().stop);
   });
   return (
     <group ref={leaf} position={[side * DOOR_HALF, 0, FRONT_Z]}>

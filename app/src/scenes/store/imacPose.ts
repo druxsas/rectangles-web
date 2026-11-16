@@ -21,6 +21,9 @@ export const SCREEN = {
   height: 0.316,
 };
 
+/** Seconds for the camera zoom onto / away from the display. */
+export const ZOOM_SECONDS = 1.3;
+
 /** World-space centre, outward normal and up vector of the display. */
 export function screenFrame() {
   const imac = new Matrix4().compose(

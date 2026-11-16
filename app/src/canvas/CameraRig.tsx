@@ -1,10 +1,11 @@
 "use client";
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { MathUtils, Vector3, type PerspectiveCamera } from "three";
 import { setScrollLocked } from "@/components/smooth-scroll";
-import { SCREEN, screenFrame } from "@/scenes/store/imacPose";
+import { ARROW_DEG, MAX_DEG, isInside, mouseYawDeg, pointer, useLook } from "@/canvas/lookAround";
+import { SCREEN, ZOOM_SECONDS, screenFrame } from "@/scenes/store/imacPose";
 import { KEYFRAMES } from "@/scenes/store/keyframes";
 import { useCheckout } from "@/stores/checkout";
 import { useScroll } from "@/stores/scroll";
@@ -19,6 +20,7 @@ const outPos = new Vector3();
 const outLook = new Vector3();
 const outUp = new Vector3();
 const WORLD_UP = new Vector3(0, 1, 0);
+const lookDir = new Vector3();
 
 function ease(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -28,10 +30,8 @@ function ease(t: number): number {
 const SCREEN_FOV = 34;
 /** Share of the viewport the display should fill — leaves the bezel visible. */
 const SCREEN_FILL = 0.8;
-/** Seconds for the zoom in / out. */
-const ZOOM_SECONDS = 1.3;
 
-type RigState = { blend: number; locked: boolean };
+type RigState = { blend: number; locked: boolean; yaw: number };
 
 /** Keyframe fovs are authored for a 16:10 desktop viewport. */
 const AUTHORED_ASPECT = 1.6;
@@ -57,8 +57,8 @@ function step(
   reducedMotion: boolean,
 ) {
   // --- Walkthrough pose from scroll
-  const p = useScroll.getState().progress;
-  const f = Math.min(p * SEGMENTS, SEGMENTS);
+  const stop = useScroll.getState().stop;
+  const f = Math.min(Math.max(stop, 0), SEGMENTS);
   const i = Math.min(Math.floor(f), SEGMENTS - 1);
   const t = ease(f - i);
   const a = KEYFRAMES[i];
@@ -66,6 +66,19 @@ function step(
   pathPos.set(...a.position).lerp(nextPos.set(...b.position), t);
   pathLook.set(...a.lookAt).lerp(nextLook.set(...b.lookAt), t);
   const pathFov = portraitFov(MathUtils.lerp(a.fov, b.fov, t), aspect);
+
+  // --- Desktop look-around (mouse + arrows), inside the shop only
+  const open0 = useCheckout.getState().isOpen;
+  const yawTarget =
+    pointer.active && isInside(stop) && !open0
+      ? MathUtils.clamp(useLook.getState().step * ARROW_DEG + mouseYawDeg(pointer.x), -MAX_DEG, MAX_DEG)
+      : 0;
+  // Freeze the turn while a hotspot is under the mouse.
+  if (!pointer.hold) rig.yaw = MathUtils.damp(rig.yaw, MathUtils.degToRad(yawTarget), 3.2, dt);
+  if (Math.abs(rig.yaw) > 1e-4) {
+    lookDir.copy(pathLook).sub(pathPos).applyAxisAngle(WORLD_UP, rig.yaw);
+    pathLook.copy(pathPos).add(lookDir);
+  }
 
   // --- Shopping blend
   const open = useCheckout.getState().isOpen;
@@ -111,7 +124,24 @@ function step(
  */
 export function CameraRig() {
   const { camera, size } = useThree();
-  const rig = useRef<RigState>({ blend: 0, locked: false });
+  const rig = useRef<RigState>({ blend: 0, locked: false, yaw: 0 });
+
+  // Track the mouse on fine-pointer (desktop) devices only.
+  useEffect(() => {
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+    pointer.active = true;
+    const move = (e: PointerEvent) => {
+      if (e.pointerType === "mouse") pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+    };
+    const leave = () => (pointer.x = 0);
+    window.addEventListener("pointermove", move, { passive: true });
+    document.documentElement.addEventListener("mouseleave", leave);
+    return () => {
+      pointer.active = false;
+      window.removeEventListener("pointermove", move);
+      document.documentElement.removeEventListener("mouseleave", leave);
+    };
+  }, []);
   const screen = useMemo(() => screenFrame(), []);
   const reducedMotion = useMemo(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
