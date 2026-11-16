@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
 import { useLoader } from "@react-three/fiber";
+import { useEffect, useMemo } from "react";
 import {
   LinearFilter,
   LinearMipmapLinearFilter,
+  NoColorSpace,
   RepeatWrapping,
   SRGBColorSpace,
   TextureLoader,
+  type ColorSpace,
   type Texture,
 } from "three";
 
@@ -17,7 +19,7 @@ export type PbrSet = {
   arm: Texture;
 };
 
-function configure(t: Texture, repeat: [number, number], colorSpace = SRGBColorSpace) {
+function configure(t: Texture, repeat: [number, number], colorSpace: ColorSpace) {
   t.wrapS = RepeatWrapping;
   t.wrapT = RepeatWrapping;
   t.repeat.set(repeat[0], repeat[1]);
@@ -29,33 +31,35 @@ function configure(t: Texture, repeat: [number, number], colorSpace = SRGBColorS
   return t;
 }
 
-/** Load the Poly Haven CC0 PBR texture sets for the store shell. */
+/**
+ * Poly Haven CC0 PBR sets for the store shell (floor + walls), as WebP
+ * (re-encoded by scripts/optimize-textures.mjs).
+ */
 export function useShellTextures() {
   const paths = useMemo(
     () => [
-      "/textures/concrete_floor_worn_001/diff.jpg",
-      "/textures/concrete_floor_worn_001/nor.jpg",
-      "/textures/concrete_floor_worn_001/arm.jpg",
-      "/textures/concrete_wall_006/diff.jpg",
-      "/textures/concrete_wall_006/nor.jpg",
-      "/textures/concrete_wall_006/arm.jpg",
-      "/textures/wood_table_001/diff.jpg",
-      "/textures/wood_table_001/nor.jpg",
-      "/textures/wood_table_001/arm.jpg",
+      "/textures/concrete_floor_worn_001/diff.webp",
+      "/textures/concrete_floor_worn_001/nor.webp",
+      "/textures/concrete_floor_worn_001/arm.webp",
+      "/textures/concrete_wall_006/diff.webp",
+      "/textures/concrete_wall_006/nor.webp",
+      "/textures/concrete_wall_006/arm.webp",
     ],
     [],
   );
-  const [fMap, fNor, fArm, wMap, wNor, wArm, cMap, cNor, cArm] = useLoader(TextureLoader, paths);
+  const [fMap, fNor, fArm, wMap, wNor, wArm] = useLoader(TextureLoader, paths);
 
   useEffect(() => {
-    configure(fMap, [8, 5]); configure(fNor, [8, 5], undefined as any); configure(fArm, [8, 5], undefined as any);
-    configure(wMap, [3, 1.1]); configure(wNor, [3, 1.1], undefined as any); configure(wArm, [3, 1.1], undefined as any);
-    configure(cMap, [2, 2]); configure(cNor, [2, 2], undefined as any); configure(cArm, [2, 2], undefined as any);
-  }, [fMap, fNor, fArm, wMap, wNor, wArm, cMap, cNor, cArm]);
+    configure(fMap, [8, 5], SRGBColorSpace);
+    configure(fNor, [8, 5], NoColorSpace);
+    configure(fArm, [8, 5], NoColorSpace);
+    configure(wMap, [3, 1.1], SRGBColorSpace);
+    configure(wNor, [3, 1.1], NoColorSpace);
+    configure(wArm, [3, 1.1], NoColorSpace);
+  }, [fMap, fNor, fArm, wMap, wNor, wArm]);
 
   return {
     floor: { map: fMap, normal: fNor, arm: fArm } as PbrSet,
     wall: { map: wMap, normal: wNor, arm: wArm } as PbrSet,
-    counter: { map: cMap, normal: cNor, arm: cArm } as PbrSet,
   };
 }

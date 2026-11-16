@@ -9,7 +9,7 @@ import type { Group } from "three";
  * Skate hero — high-poly skateboard with 1k PBR textures (Draco-compressed).
  * Rotates slowly on Y + a subtle bob + tilt. Cobalt underglow pool.
  */
-const PATH = "/models/skate_hq/skate_hq.glb";
+const PATH = "/models/opt/skate_hq.glb";
 
 export function SkateScene() {
   const group = useRef<Group>(null);

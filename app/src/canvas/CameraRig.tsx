@@ -33,6 +33,20 @@ const ZOOM_SECONDS = 1.3;
 
 type RigState = { blend: number; locked: boolean };
 
+/** Keyframe fovs are authored for a 16:10 desktop viewport. */
+const AUTHORED_ASPECT = 1.6;
+const MAX_FOV = 80;
+
+/**
+ * On narrower (portrait / mobile) viewports widen the vertical fov so the
+ * horizontal framing of each stop is preserved, up to MAX_FOV.
+ */
+function portraitFov(fov: number, aspect: number) {
+  if (aspect >= AUTHORED_ASPECT) return fov;
+  const half = Math.tan(MathUtils.degToRad(fov / 2)) * (AUTHORED_ASPECT / aspect);
+  return Math.min(MAX_FOV, MathUtils.radToDeg(2 * Math.atan(half)));
+}
+
 /** One frame of camera motion (module-level so hook values aren't mutated in render scope). */
 function step(
   camera: PerspectiveCamera,
@@ -51,7 +65,7 @@ function step(
   const b = KEYFRAMES[i + 1];
   pathPos.set(...a.position).lerp(nextPos.set(...b.position), t);
   pathLook.set(...a.lookAt).lerp(nextLook.set(...b.lookAt), t);
-  const pathFov = MathUtils.lerp(a.fov, b.fov, t);
+  const pathFov = portraitFov(MathUtils.lerp(a.fov, b.fov, t), aspect);
 
   // --- Shopping blend
   const open = useCheckout.getState().isOpen;

@@ -11,7 +11,7 @@ import { useNightShiftTexture } from "@/hero/NightShiftTexture";
  * Night Shift CanvasTexture overlaid on its face. Gentle rotation + cobalt
  * pool light from the screen.
  */
-const PATH = "/models/arcade_hq/arcade_hq.glb";
+const PATH = "/models/opt/arcade_hq.glb";
 
 export function GamesScene() {
   const group = useRef<Group>(null);
