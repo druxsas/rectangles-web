@@ -218,8 +218,8 @@ function Storefront() {
         <planeGeometry args={[1.5, 0.95]} />
         <meshStandardMaterial color="#141516" roughness={1} />
       </mesh>
-      {/* Woven framed logo, readable when walking in (rotated to face the street) */}
-      <group position={[0, 0.008, z - 0.7]} rotation={[-Math.PI / 2, 0, Math.PI]}>
+      {/* Woven framed logo — top of the logo points into the shop, so it reads upright for someone walking in */}
+      <group position={[0, 0.008, z - 0.7]} rotation={[-Math.PI / 2, 0, 0]}>
         <LogoPlane variant="framed" tone="white" width={1.1} tint="#6b6f74" />
       </group>
 
