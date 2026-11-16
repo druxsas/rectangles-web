@@ -223,7 +223,7 @@ export function ListeningPanel() {
                 </>
               ) : notice === "refreshed" ? (
                 <>
-                  Player refreshed. Still on previews? Your browser is keeping Spotify&apos;s sign-in out of other sites —{" "}
+                  Player refreshed. Still on previews? In Chrome, use a regular (not Incognito) window with third-party cookies allowed — or{" "}
                   <a href={LINK} target="_blank" rel="noreferrer" style={{ color: "#f7f7f3", textDecoration: "underline" }}>
                     listen in Spotify
                   </a>
@@ -233,7 +233,7 @@ export function ListeningPanel() {
                 <>Sign in on the Spotify window, then close it — the player refreshes on its own.</>
               ) : (
                 <>
-                  <strong style={{ color: "#f7f7f3" }}>Hearing 30-second previews?</strong> Sign in to Spotify to play full tracks.
+                  <strong style={{ color: "#f7f7f3" }}>Hearing 30-second previews?</strong> Sign in to Spotify to play full tracks (works best in Chrome).
                 </>
               )}
             </p>
