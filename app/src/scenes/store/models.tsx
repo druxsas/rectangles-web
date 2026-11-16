@@ -386,6 +386,16 @@ export const RecordPlayerHQ = model("/models/record_player/record_player.glb", {
   },
 });
 
+/**
+ * Simla bordered rug (user-supplied, 3 × 4 m), "Snow Charcoal" colourway —
+ * light field with a black frame, echoing the framed mark. Exported with
+ * `obj_to_glb.py --keep Simla_Bordered_Rugs_004 --texture …Snow-Charcoal…`.
+ */
+export const RugHQ = model("/models/rug/rug.glb", {
+  fit: { depth: 4.0 },
+  castShadow: false,
+});
+
 // ----------------------------------------------------------------
 // Poly Pizza CC-BY supporting models.
 // ----------------------------------------------------------------

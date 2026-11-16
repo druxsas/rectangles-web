@@ -15,6 +15,7 @@ import {
   ImacHQ,
   PaperBagHQ,
   PlantsHQ,
+  RugHQ,
   SkateHQ,
   SpeakerPairHQ,
   RecordPlayerHQ,
@@ -49,7 +50,6 @@ const COL = {
   signInk: "#f7f7f3",
   signBg: "#121315",
   frame: "#0b0c0d",
-  rug: "#4d1c10",
   cobalt: "#165dfa",
   warm: "#ffbc7a",
   woodDark: "#231710",
@@ -425,10 +425,8 @@ function GamesZone() {
 function Furnishings() {
   return (
     <group>
-      <mesh position={[0, 0.004, -0.4]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[3.4, 2.3]} />
-        <meshStandardMaterial color={COL.rug} roughness={0.95} />
-      </mesh>
+      {/* Simla bordered rug, laid landscape: long side across the shop */}
+      <RugHQ position={[0, 0.001, 0.35]} rotation={[0, Math.PI / 2, 0]} />
       <PlantsHQ position={[-5.05, 0, -4.05]} rotation={[0, 0.6, 0]} />
       <PlantsHQ position={[4.95, 0, 3.95]} rotation={[0, -2.4, 0]} />
     </group>
