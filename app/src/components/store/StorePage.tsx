@@ -842,7 +842,9 @@ export function StorePage() {
     <div
       ref={scroller}
       data-lenis-prevent
+      data-store-root
       style={{
+        position: "relative",
         width: STORE_W,
         height: STORE_H,
         overflowY: "auto",
