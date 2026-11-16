@@ -6,7 +6,7 @@ import { useRef } from "react";
 import { SRGBColorSpace, type Group, type Texture } from "three";
 import { FramedMark } from "@/scenes/store/FramedMark";
 import { Deck } from "@/scenes/store/DeckArt";
-import { PlantsHQ } from "@/scenes/store/models";
+import { PlantBigHQ, PlantTallHQ } from "@/scenes/store/models";
 import { useScroll } from "@/stores/scroll";
 import { useQuality } from "@/canvas/quality";
 
@@ -188,8 +188,11 @@ export function Exterior() {
       {high && <pointLight position={[7.1, 3.4, FRONT_Z + 0.9]} color="#ffbc7a" intensity={2.2} distance={4.5} decay={1.6} />}
 
       {/* Sidewalk dressing */}
-      <PlantsHQ position={[-7.1, 0, 6.2]} rotation={[0, 0.9, 0]} />
-      <PlantsHQ position={[8.6, 0, 6.3]} rotation={[0, -0.5, 0]} />
+      {/* Black-pot plants: tall ones under the wall sconces, large planters flanking the door */}
+      <PlantTallHQ position={[-8.2, 0, FRONT_Z + 0.45]} rotation={[0, 0.6, 0]} />
+      <PlantTallHQ position={[8.2, 0, FRONT_Z + 0.45]} rotation={[0, -0.8, 0]} />
+      <PlantBigHQ position={[-1.42, 0, FRONT_Z + 0.48]} rotation={[0, 0.3, 0]} />
+      <PlantBigHQ position={[1.42, 0, FRONT_Z + 0.48]} rotation={[0, -1.9, 0]} />
       <Bench position={[-3.3, 0, FRONT_Z + 0.45]} />
       {/* A complete leaning against the left pier */}
       <group position={[-5.45, 0, FRONT_Z + 0.32]} rotation={[0, 0.2, 0]}>
