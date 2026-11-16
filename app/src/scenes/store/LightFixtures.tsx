@@ -144,7 +144,7 @@ export function CounterLights({ z, top, front, width }: { z: number; top: number
         <meshBasicMaterial color="#fff1dc" toneMapped={false} />
       </mesh>
       {/* One wide, soft spot covers the whole top (a second area light would cost every pixel in the scene) */}
-      <AimedSpot from={[0, y - 0.05, z]} to={[0, top, z + 0.05]} intensity={34} angle={0.95} penumbra={1} distance={6} color="#fff0dc" />
+      <AimedSpot from={[0, y - 0.05, z]} to={[0, top, z + 0.05]} intensity={24} angle={0.95} penumbra={1} distance={6} color="#fff0dc" />
       <LightBeam from={[0, y - 0.05, z]} to={[0, top, z + 0.05]} spread={0.7} color="#fff0dc" opacity={0.035} />
 
       {/* LED strip under the top's lip, full counter width */}
