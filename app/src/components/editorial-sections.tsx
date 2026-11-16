@@ -2,6 +2,7 @@
 
 import { KEYFRAMES } from "@/scenes/store/keyframes";
 import { useReachableStops, useScroll } from "@/stores/scroll";
+import { useTravel } from "@/stores/travel";
 
 /**
  * Minimal DOM overlay for the immersive walkthrough.
@@ -20,13 +21,16 @@ const COBALT = "#165dfa";
 export function EditorialSections() {
   const stop = useScroll((s) => s.stop);
   const total = useReachableStops();
-  const section = Math.round(stop);
+  const travel = useTravel();
+  const section = travel.active ? travel.to : Math.round(stop);
 
   return (
     <div className="relative w-full pointer-events-none">
       {KEYFRAMES.slice(0, total).map((k, i) => {
         // 1 when the camera sits on this stop, 0 half a stop away.
-        const closeness = Math.max(0, 1 - Math.abs(stop - i) * 2);
+        // During a direct jump only the origin and destination captions show.
+        const skipped = travel.active && i !== travel.to && i !== Math.round(travel.from);
+        const closeness = skipped ? 0 : Math.max(0, 1 - Math.abs(stop - i) * 2);
         const active = i === section;
 
         return (

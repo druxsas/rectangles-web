@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { scrollToSection } from "@/components/smooth-scroll";
 import { KEYFRAMES } from "@/scenes/store/keyframes";
 import { HIDDEN_IN_MENU, useScroll } from "@/stores/scroll";
+import { useTravel } from "@/stores/travel";
 
 /**
  * Persistent top navigation — basement-studio-style strip.
@@ -23,7 +24,10 @@ import { HIDDEN_IN_MENU, useScroll } from "@/stores/scroll";
 const ITEMS = KEYFRAMES.map((kf, i) => ({ ...kf, index: i })).filter((kf) => !HIDDEN_IN_MENU.has(kf.id));
 
 export function SiteNav() {
-  const section = useScroll((s) => Math.round(s.stop));
+  const stopNow = useScroll((s) => Math.round(s.stop));
+  const travel = useTravel();
+  // While flying straight to a stop, highlight the destination.
+  const section = travel.active ? travel.to : stopNow;
   const [open, setOpen] = useState(false);
 
   const go = (i: number) => {
