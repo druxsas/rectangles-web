@@ -14,7 +14,7 @@
 
 import { NodeIO, PropertyType } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
-import { dedup, draco, prune, simplify, textureCompress, weld } from "@gltf-transform/functions";
+import { dedup, draco, flatten, join as joinMeshes, prune, simplify, textureCompress, weld } from "@gltf-transform/functions";
 import draco3d from "draco3dgltf";
 import { MeshoptSimplifier } from "meshoptimizer";
 import { mkdirSync, statSync } from "node:fs";
@@ -30,25 +30,28 @@ const OUT = join(APP, "public", "models", "opt");
  * source: alternate source file in assets-src/models (e.g. a Blender
  *         collapse-decimated "<name>.lod" from scripts/blender/decimate_glb.py,
  *         used for foliage / kit-bashed models meshoptimizer can't reduce)
+ * join:  merge all meshes that share a material into one draw call each
+ *        (only for models whose node names the scene doesn't rely on)
+ * drop:  node names removed before joining (e.g. material-preview spheres)
  * ratio: target share of triangles kept (1 = no simplification)
  * error: max simplification error, relative to mesh extent
  * tex / data: max texture edge for base colour / data maps
  */
 const MODELS = {
   // Hero deck seen close at the Skate stop, 7 instances in the scene.
-  skate_hq: { ratio: 0.04, error: 0.002, tex: 1024, data: 512 },
+  skate_hq: { ratio: 0.04, error: 0.002, tex: 1024, data: 512, join: true },
   // Foliage, 4 instances, never closer than ~1.5 m. Blender pre-pass: --ratio 0.18
   plants_hq: { source: "plants_hq.lod", ratio: 1 },
   // Ceiling track lights, 4 instances, always far away.
-  hokasu: { ratio: 0.04, error: 0.004 },
+  hokasu: { ratio: 0.04, error: 0.004, join: true, drop: ["HOKASU Tube Clip TR4-001", "HOKASU Tube Clip TR4-002"] },
   // Two cabinets, seen at mid-distance at the Games stop. Blender pre-pass: --ratio 0.12
-  arcade_hq: { source: "arcade_hq.lod", ratio: 1 },
+  arcade_hq: { source: "arcade_hq.lod", ratio: 1, join: true },
   // Close-up at the Music stop.
   record_player: { ratio: 0.4, error: 0.001, tex: 1024, data: 512 },
   // Close-up when shopping (screen is a separate plane).
   imac: { ratio: 0.5, error: 0.0008, tex: 1024, data: 1024 },
   william: { ratio: 1, tex: 1024, data: 512 },
-  speaker_hq: { ratio: 0.7, error: 0.001 },
+  speaker_hq: { ratio: 0.7, error: 0.001, join: true },
   rug: { ratio: 1, tex: 1024 },
   tv: { ratio: 1 },
   paper_bag: { ratio: 1 },
@@ -87,12 +90,16 @@ for (const name of names) {
 
   // Materials are NOT deduplicated: the scene overrides them by name
   // (e.g. the arcade screen, the bag's gold foil), even when identical.
+  for (const node of doc.getRoot().listNodes()) if (cfg.drop?.includes(node.getName())) node.dispose();
+
   const steps = [
     dedup({ propertyTypes: [PropertyType.ACCESSOR, PropertyType.MESH, PropertyType.TEXTURE] }),
     prune({ keepAttributes: true }),
     weld(),
   ];
   if (cfg.ratio < 1) steps.push(simplify({ simplifier: MeshoptSimplifier, ratio: cfg.ratio, error: cfg.error ?? 0.001 }));
+  // Join after simplifying (per-part simplification collapses much further).
+  if (cfg.join) steps.push(flatten(), joinMeshes({ keepNamed: false }));
   if (cfg.tex || cfg.data) {
     if (cfg.tex)
       steps.push(
