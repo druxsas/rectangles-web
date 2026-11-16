@@ -11,7 +11,7 @@ import { useCheckout } from "@/stores/checkout";
  * Click opens the marketplace. Slow Y rotation + hover bob, cobalt rim
  * light so the Bondi-blue shell reads.
  */
-const PATH = "/models/imac_hq/imac_hq.glb";
+const PATH = "/models/imac/imac.glb";
 
 export function RetroScene() {
   const group = useRef<Group>(null);

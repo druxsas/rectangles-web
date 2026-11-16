@@ -1,7 +1,7 @@
 {
   "font": {
     "family": {
-      "display": { "$type": "fontFamily", "$value": ["var(--font-display)", "Barlow Condensed", "Impact", "sans-serif"] },
+      "display": { "$type": "fontFamily", "$value": ["var(--font-display)", "Anton", "Impact", "sans-serif"] },
       "sans":    { "$type": "fontFamily", "$value": ["var(--font-sans)", "Inter", "system-ui", "sans-serif"] },
       "mono":    { "$type": "fontFamily", "$value": ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"] }
     },

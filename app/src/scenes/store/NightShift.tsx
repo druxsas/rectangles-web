@@ -24,6 +24,9 @@ export function useNightShiftTexture() {
     t.magFilter = NearestFilter;
     t.minFilter = LinearFilter;
     t.colorSpace = SRGBColorSpace;
+    // The arcade cabinet's screen plane is UV-mapped a quarter turn off.
+    t.center.set(0.5, 0.5);
+    t.rotation = -Math.PI / 2;
     return t;
   }, [canvas]);
 

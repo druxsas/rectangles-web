@@ -52,4 +52,6 @@ app/src/styles/tokens.generated.css
 
 # Source 3D assets (converted to app/public/models/*.glb via Blender)
 /3D_Objects/
+# Source video masters (ProRes, hundreds of MB) — web encodes live in app/public/video/
+/Video/
 

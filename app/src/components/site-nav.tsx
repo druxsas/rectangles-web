@@ -1,6 +1,7 @@
 "use client";
 
 import { KEYFRAMES } from "@/scenes/store/keyframes";
+import { scrollToSection } from "@/components/smooth-scroll";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useScroll } from "@/stores/scroll";
 
@@ -8,7 +9,7 @@ import { useScroll } from "@/stores/scroll";
  * Persistent top navigation — basement-studio-style strip.
  *
  * - Left: wordmark that doubles as "go to top".
- * - Center: section jumps that scroll to the matching keyframe anchor.
+ * - Center: section jumps that glide (via Lenis) to the matching keyframe.
  *   Current section is highlighted via `useScroll` state.
  * - Right: version tag + theme toggle.
  *
@@ -18,11 +19,7 @@ import { useScroll } from "@/stores/scroll";
 export function SiteNav() {
   const section = useScroll((s) => s.section);
 
-  const goToSection = (i: number) => {
-    const el = document.getElementById(`section-${KEYFRAMES[i].id}`);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  const goToSection = (i: number) => scrollToSection(i);
 
   return (
     <nav
@@ -40,12 +37,13 @@ export function SiteNav() {
           href="#section-facade"
           onClick={(e) => {
             e.preventDefault();
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            scrollToSection(0);
           }}
-          className="font-display text-heading-md font-black uppercase tracking-tight pointer-events-auto"
-          style={{ color: "#f7f7f3" }}
+          aria-label="Rectangle's — back to the facade"
+          className="pointer-events-auto block"
         >
-          Rectangle&apos;s<span style={{ color: "#165dfa" }}>.</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo/horizontal-white.svg" alt="Rectangle's" style={{ height: 22, width: "auto", display: "block" }} />
         </a>
 
         {/* Section jumps (hidden on small screens) */}

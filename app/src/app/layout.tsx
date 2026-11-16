@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, Inter, JetBrains_Mono } from "next/font/google";
+import { Anton, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { ThemeProvider } from "@/components/theme-provider";
 import { themeInitScript } from "@/lib/theme";
 
-const display = Barlow_Condensed({
+// Display / headlines. Anton ships a single (heavy) weight; bold synthesis
+// is disabled on <html> so "font-black" headings don't get faux-emboldened.
+const display = Anton({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["700", "800", "900"],
+  weight: "400",
 });
 
 const sans = Inter({
@@ -37,6 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       data-theme="system"
       suppressHydrationWarning
       className={`${display.variable} ${sans.variable} ${mono.variable} h-full antialiased`}
+      style={{ fontSynthesisWeight: "none" }}
     >
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />

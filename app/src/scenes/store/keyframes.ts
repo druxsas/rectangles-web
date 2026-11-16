@@ -6,7 +6,7 @@
  * neighbors with a cubic ease; the DOM overlay shows the matching title.
  *
  * World axes: +X right, +Y up, +Z toward viewer.
- * Store box: 20 × 8 × 14 centered on X/Z, floor at Y=0.
+ * Store box: 12 × 4.2 × 10 m centered on X/Z, floor at Y=0 (see Store.tsx).
  */
 
 export type Keyframe = {
@@ -22,58 +22,58 @@ export const KEYFRAMES: Keyframe[] = [
   {
     id: "facade",
     title: "Facade",
-    body: "Rectangle's — the storefront. Warm lamps bleed through the window.",
-    position: [0, 4.2, 18],
-    lookAt: [0, 4, 7],
-    fov: 55,
+    body: "Skate, music, games, apparel. Warm light behind the glass.",
+    position: [0, 1.75, 15],
+    lookAt: [0, 2.3, 4],
+    fov: 56,
   },
   {
     id: "entrance",
     title: "Entrance",
-    body: "Step inside. The RECTANGLE'S sign glows at the back wall.",
-    position: [0, 1.9, 5],
-    lookAt: [0, 2.5, -6.5],
+    body: "Step inside. See what's over here.",
+    position: [0, 1.65, 4.0],
+    lookAt: [0, 1.55, -5],
     fov: 58,
-  },
-  {
-    id: "skate",
-    title: "Skate",
-    body: "A complete deck on the stand — collect, ride, repeat.",
-    position: [-5, 1.6, 0.5],
-    lookAt: [-8.5, 1.5, -1.5],
-    fov: 40,
-  },
-  {
-    id: "music",
-    title: "Music",
-    body: "Vinyl spins between a pair of tower speakers.",
-    position: [5.5, 1.8, 1],
-    lookAt: [8, 1.5, -1.5],
-    fov: 40,
   },
   {
     id: "games",
     title: "Games",
-    body: "Night Shift running on the arcade at the back.",
-    position: [1.5, 1.6, -2],
-    lookAt: [1, 1.6, -5.5],
-    fov: 40,
+    body: "Night Shift on both cabinets. One more game.",
+    position: [-2.9, 1.7, 2.9],
+    lookAt: [-6, 1.85, 2.7],
+    fov: 56,
   },
   {
-    id: "retro",
-    title: "Retro",
-    body: "Behind the counter, the iMac — click to shop.",
-    position: [-2, 1.7, -3.5],
-    lookAt: [-4, 1.6, -5.8],
-    fov: 36,
+    id: "skate",
+    title: "Skate",
+    body: "Completes on the wall. Deck, trucks, wheels and bearings included.",
+    position: [-2.3, 1.5, -1.2],
+    lookAt: [-6, 1.3, -1.45],
+    fov: 52,
+  },
+  {
+    id: "music",
+    title: "Music",
+    body: "A turntable between two towers. Build your setup.",
+    position: [2.9, 1.45, -1.5],
+    lookAt: [5.65, 1.3, -1.35],
+    fov: 50,
   },
   {
     id: "shop",
     title: "Shop",
-    body: "The vendor hands you a Rectangle's bag. No real card is ever requested.",
-    position: [0, 2.3, -3],
-    lookAt: [0, 2.4, -6.5],
-    fov: 50,
+    body: "Behind the counter, the iMac runs the store. Click it to browse.",
+    position: [-0.75, 1.5, -4.75],
+    lookAt: [-0.9, 1.25, -3.6],
+    fov: 42,
+  },
+  {
+    id: "handoff",
+    title: "Handoff",
+    body: "Demo purchase confirmed. Your Rectangle's bag is ready.",
+    position: [0.3, 1.55, -1.6],
+    lookAt: [0.75, 1.3, -4.0],
+    fov: 44,
   },
 ];
 

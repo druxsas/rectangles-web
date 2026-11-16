@@ -48,8 +48,8 @@ export function useShellTextures() {
   const [fMap, fNor, fArm, wMap, wNor, wArm, cMap, cNor, cArm] = useLoader(TextureLoader, paths);
 
   useEffect(() => {
-    configure(fMap, [6, 6]); configure(fNor, [6, 6], undefined as any); configure(fArm, [6, 6], undefined as any);
-    configure(wMap, [4, 2]); configure(wNor, [4, 2], undefined as any); configure(wArm, [4, 2], undefined as any);
+    configure(fMap, [8, 5]); configure(fNor, [8, 5], undefined as any); configure(fArm, [8, 5], undefined as any);
+    configure(wMap, [3, 1.1]); configure(wNor, [3, 1.1], undefined as any); configure(wArm, [3, 1.1], undefined as any);
     configure(cMap, [2, 2]); configure(cNor, [2, 2], undefined as any); configure(cArm, [2, 2], undefined as any);
   }, [fMap, fNor, fArm, wMap, wNor, wArm, cMap, cNor, cArm]);
 

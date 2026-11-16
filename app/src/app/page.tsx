@@ -1,9 +1,10 @@
 import { SceneCanvas } from "@/canvas/SceneCanvas";
-import { CheckoutOverlay } from "@/components/checkout-overlay";
 import { CustomCursor } from "@/components/custom-cursor";
 import { EditorialSections, ScrollProgress } from "@/components/editorial-sections";
 import { LoadingReveal } from "@/components/loading-reveal";
 import { SiteNav } from "@/components/site-nav";
+import { HideWhenShopping } from "@/components/store/HideWhenShopping";
+import { ShoppingMode } from "@/components/store/ShoppingMode";
 
 /**
  * Home — immersive 3D walkthrough of the Rectangle's store.
@@ -11,25 +12,30 @@ import { SiteNav } from "@/components/site-nav";
  * Scroll drives a cinematic camera path through seven stops from the
  * brandbook §15 storyboard. Chrome layered on top: intro reveal, custom
  * cursor, nav with section jumps + theme toggle, scroll progress bar,
- * minimal DOM captions, demo marketplace overlay triggered by the iMac.
+ * minimal DOM captions. Clicking the iMac zooms onto its display, where the
+ * online store runs live (scenes/store/ImacStore + components/store).
  */
 export default function Home() {
   return (
     <>
       <LoadingReveal />
       <CustomCursor />
-      <ScrollProgress />
-      <SiteNav />
+      <ShoppingMode />
+      <HideWhenShopping>
+        <ScrollProgress />
+        <SiteNav />
+      </HideWhenShopping>
 
       {/* 3D world — fills the viewport, drives the whole experience */}
       <SceneCanvas />
 
       {/* Minimal DOM overlay — seven scroll anchors with captions */}
-      <main className="relative z-10 pointer-events-none">
-        <EditorialSections />
-      </main>
+      <HideWhenShopping className="relative z-10 pointer-events-none">
+        <main>
+          <EditorialSections />
+        </main>
+      </HideWhenShopping>
 
-      <CheckoutOverlay />
 
       <footer
         className="relative z-30 px-6 md:px-12 py-6 font-mono text-mono-sm uppercase tracking-wide flex items-center justify-between"
