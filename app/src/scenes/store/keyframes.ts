@@ -54,7 +54,7 @@ export const KEYFRAMES: Keyframe[] = [
   {
     id: "music",
     title: "Music",
-    body: "A turntable between two towers. Build your setup.",
+    body: "A turntable between two towers. Click or tap it to pick what plays.",
     position: [2.9, 1.45, -1.5],
     lookAt: [5.65, 1.3, -1.35],
     fov: 50,

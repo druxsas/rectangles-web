@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { isInside, useLook } from "@/canvas/lookAround";
 import { useCheckout } from "@/stores/checkout";
+import { useListening } from "@/stores/listening";
 import { useScroll } from "@/stores/scroll";
 
 /**
@@ -17,7 +18,8 @@ export function LookArrows() {
   const step = useLook((s) => s.step);
   const left = useLook((s) => s.left);
   const right = useLook((s) => s.right);
-  const visible = desktop && inside && !shopping;
+  const listening = useListening((s) => s.isOpen);
+  const visible = desktop && inside && !shopping && !listening;
 
   useEffect(() => {
     const mq = window.matchMedia("(pointer: coarse)");
