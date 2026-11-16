@@ -1,11 +1,10 @@
 "use client";
 
-import { Text } from "@react-three/drei";
+import { Text, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import type { Group } from "three";
+import { SRGBColorSpace, type Group, type Texture } from "three";
 import { FramedMark } from "@/scenes/store/FramedMark";
-import { LogoPlane } from "@/scenes/store/LogoPlane";
 import { KEYFRAMES } from "@/scenes/store/keyframes";
 import { PlantsHQ, SkateHQ } from "@/scenes/store/models";
 import { useScroll } from "@/stores/scroll";
@@ -124,7 +123,18 @@ function Bench({ position }: { position: [number, number, number] }) {
   );
 }
 
+const POSTER_W = 0.56;
+
+function configurePoster(t: Texture | Texture[]) {
+  for (const tex of Array.isArray(t) ? t : [t]) {
+    tex.colorSpace = SRGBColorSpace;
+    tex.anisotropy = 8;
+  }
+}
+
+/** Sidewalk A-frame with the entrance poster (/Images → optimized WebP). */
 function AFrameBoard({ position, rotation }: { position: [number, number, number]; rotation: number }) {
+  const poster = useTexture("/textures/posters/entrance-aframe.webp", configurePoster);
   const h = 0.95;
   const w = 0.6;
   const tilt = 0.24;
@@ -138,13 +148,11 @@ function AFrameBoard({ position, rotation }: { position: [number, number, number
               <boxGeometry args={[w, h, 0.025]} />
               <meshStandardMaterial color={ink} roughness={0.6} />
             </mesh>
-            <mesh position={[0, -h / 2 + 0.03, 0.0135]}>
-              <planeGeometry args={[w - 0.08, h - 0.16]} />
-              <meshStandardMaterial color={paper} roughness={0.9} />
+            {/* Entrance poster (2:3) — faint self-light keeps it readable at night */}
+            <mesh position={[0, -h / 2 + 0.02, 0.0135]}>
+              <planeGeometry args={[POSTER_W, POSTER_W * 1.5]} />
+              <meshStandardMaterial map={poster} emissiveMap={poster} emissive="#ffffff" emissiveIntensity={0.14} roughness={0.85} />
             </mesh>
-            <group position={[0, -h / 2 + 0.1, 0.015]}>
-              <LogoPlane variant="framed" tone="black" width={0.44} />
-            </group>
           </group>
         </group>
       ))}
