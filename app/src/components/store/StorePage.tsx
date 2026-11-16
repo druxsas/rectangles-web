@@ -464,7 +464,7 @@ function ProductScreen() {
         <div>
           <ProductImage p={p} src={gallery[shot]} ratio="853 / 513" scale={2.2} alt={p.title} />
           {gallery.length > 1 && (
-            <div className="grid" style={{ gridTemplateColumns: `repeat(${gallery.length}, 1fr)`, gap: 12, marginTop: 12 }}>
+            <div className="grid" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginTop: 12 }}>
               {gallery.map((g, i) => (
                 <button
                   key={g}
@@ -499,7 +499,13 @@ function ProductScreen() {
                 <span>Color</span>
                 <div className="flex gap-4">
                   {p.colors.map((c) => (
-                    <OptionChip key={c.id} selected={color === c.id} onClick={() => setColor(c.id)} width={150}>
+                    <OptionChip key={c.id} selected={color === c.id} onClick={() => {
+                        setColor(c.id);
+                        const i = p.colorShots?.[c.id];
+                        if (i !== undefined) setShot(i);
+                      }}
+                      width={150}
+                    >
                       <span style={{ width: 28, height: 20, background: c.swatch, border: `1px solid ${C.line}` }} />
                       {c.label}
                     </OptionChip>
