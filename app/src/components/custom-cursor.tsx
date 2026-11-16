@@ -162,7 +162,8 @@ export function CustomCursor() {
         background: BLUE,
         mixBlendMode: "difference",
         opacity: 0,
-        transition: "opacity 200ms ease, background 90ms ease, box-shadow 90ms ease",
+        // Fill/outline switch is instant: fading the solid fill while the box grows read as a flash.
+        transition: "opacity 200ms ease",
         willChange: "transform, width, height",
       }}
     />
