@@ -75,7 +75,7 @@ node scripts/fetch-polyhaven-tex.mjs <slug> [1k|2k|4k]
 
 ## Fonts
 
-- **Barlow Condensed** — Google Fonts, SIL Open Font License
+- **Anton** — Google Fonts, SIL Open Font License 1.1 (display / headlines; TTF + license in `app/public/fonts/` for 3D text)
 - **Inter** — Google Fonts, SIL Open Font License
 - **JetBrains Mono** — Google Fonts, SIL Open Font License
 

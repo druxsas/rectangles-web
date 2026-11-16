@@ -154,7 +154,7 @@ export default function StyleguidePage() {
         <SemanticGrid />
       </Section>
 
-      <Section id="typography" title="Typography" subtitle="Display = Barlow Condensed (heavy, condensed grotesque). Body = Inter. Mono = JetBrains Mono.">
+      <Section id="typography" title="Typography" subtitle="Display = Anton (heavy, condensed grotesque). Body = Inter. Mono = JetBrains Mono.">
         <div className="space-y-6">
           {TYPE_SAMPLES.map((t) => (
             <div key={t.name} className="border-t border-line pt-6 first:border-t-0 first:pt-0">

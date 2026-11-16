@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 /**
- * Loading reveal — black overlay with the RECTANGLE'S wordmark that
+ * Loading reveal — black overlay with the official horizontal logo that
  * exits upward after the initial paint. Runs once per session (sessionStorage).
  */
 export function LoadingReveal() {
@@ -40,13 +40,12 @@ export function LoadingReveal() {
     >
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative">
-          <div
-            className="font-display font-black uppercase leading-none tracking-tight"
-            style={{ color: "#f7f7f3", fontSize: "min(18vw, 220px)" }}
-          >
-            Rectangle&apos;s
-            <span style={{ color: "#165dfa" }}>.</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo/horizontal-white.svg"
+            alt=""
+            style={{ width: "min(80vw, 1100px)", height: "auto", display: "block", marginBottom: "0.6em" }}
+          />
           <div
             className="absolute bottom-0 left-0 h-[2px] origin-left"
             style={{
