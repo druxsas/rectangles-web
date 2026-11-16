@@ -28,6 +28,8 @@ const MAX_W = 520;
 const MAX_H = 320;
 /** How far the outline leans toward the pointer (share of the offset from centre). */
 const LEAN = 0.1;
+/** Morph time constant, ms (≈95% settled after 3×). Time-based, so it is as quick at 30 fps as at 120. */
+const TAU = 28;
 
 export function CustomCursor() {
   const node = useRef<HTMLDivElement>(null);
@@ -44,6 +46,14 @@ export function CustomCursor() {
     let visible = false;
     let mode: "free" | "grown" | "shape" = "free";
     let raf = 0;
+    let last = performance.now();
+
+    const write = () => {
+      el.style.width = `${box.w}px`;
+      el.style.height = `${box.h}px`;
+      el.style.borderRadius = `${box.r}px`;
+      el.style.transform = `translate(${box.x - box.w / 2}px, ${box.y - box.h / 2}px)`;
+    };
 
     const onMove = (e: MouseEvent) => {
       mouse.x = e.clientX;
@@ -54,6 +64,13 @@ export function CustomCursor() {
         box.y = mouse.y;
         visible = true;
         el.style.opacity = "1";
+      }
+      // The free square moves with the event itself, not on the next frame:
+      // the 3D scene can run below the display rate and would make it trail.
+      if (mode !== "shape") {
+        box.x = mouse.x;
+        box.y = mouse.y;
+        write();
       }
     };
     const onOver = (e: MouseEvent) => {
@@ -73,6 +90,9 @@ export function CustomCursor() {
 
     const tick = () => {
       raf = requestAnimationFrame(tick);
+      const now = performance.now();
+      const ease = 1 - Math.exp(-Math.min(now - last, 100) / TAU);
+      last = now;
       if (hovered && !hovered.isConnected) hovered = null;
 
       let tx = mouse.x;
@@ -102,12 +122,12 @@ export function CustomCursor() {
       }
 
       // The free square sticks to the pointer; shapes ease into place.
-      const k = next === "shape" ? 0.26 : 1;
+      const k = next === "shape" ? ease : 1;
       box.x += (tx - box.x) * k;
       box.y += (ty - box.y) * k;
-      box.w += (tw - box.w) * 0.26;
-      box.h += (th - box.h) * 0.26;
-      box.r += (tr - box.r) * 0.26;
+      box.w += (tw - box.w) * ease;
+      box.h += (th - box.h) * ease;
+      box.r += (tr - box.r) * ease;
 
       if (next !== mode) {
         mode = next;
@@ -116,10 +136,7 @@ export function CustomCursor() {
         el.style.boxShadow = shape ? `inset 0 0 0 2px ${BLUE}` : "none";
         el.style.mixBlendMode = shape ? "normal" : "difference";
       }
-      el.style.width = `${box.w}px`;
-      el.style.height = `${box.h}px`;
-      el.style.borderRadius = `${box.r}px`;
-      el.style.transform = `translate(${box.x - box.w / 2}px, ${box.y - box.h / 2}px)`;
+      write();
     };
 
     window.addEventListener("mousemove", onMove);
@@ -145,7 +162,7 @@ export function CustomCursor() {
         background: BLUE,
         mixBlendMode: "difference",
         opacity: 0,
-        transition: "opacity 200ms ease, background 160ms ease, box-shadow 160ms ease",
+        transition: "opacity 200ms ease, background 90ms ease, box-shadow 90ms ease",
         willChange: "transform, width, height",
       }}
     />
