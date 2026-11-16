@@ -35,6 +35,8 @@ export type Product = {
   gallery?: string[];
   colors?: { id: string; label: string; swatch: string }[];
   sizes?: string[];
+  /** Gallery index to show when a colour is picked (colour id → index). */
+  colorShots?: Record<string, number>;
   /** Opens the "Build your setup" configurator instead of a product page. */
   configurable?: boolean;
   /** Kept for the 3D iMac screen art. */
@@ -97,7 +99,6 @@ export const PRODUCTS: Product[] = [
     sizes: ["S", "M", "L", "XL"],
     accent: "#2a4fa0",
   },
-  // ---- Photos pending: these render with the branded placeholder ----
   {
     id: "black-frame-deck",
     collection: "skate",
@@ -107,6 +108,8 @@ export const PRODUCTS: Product[] = [
     price: 55,
     tagline: "The framed mark on 7-ply maple. Deck only — bring your own trucks.",
     details: ["8.25\" × 32\"", "7-ply Canadian maple", "Medium concave", "Grip tape sold separately"],
+    image: "/shop/p/black-frame-deck-card.jpg",
+    gallery: ["/shop/p/black-frame-deck-main.jpg"],
     accent: "#16181b",
   },
   {
@@ -118,6 +121,8 @@ export const PRODUCTS: Product[] = [
     price: 28,
     tagline: "Set of four. Hard enough for the street, quiet enough for the shop floor.",
     details: ["53 mm / 99A", "Set of 4", "Ivory urethane", "Printed frame mark"],
+    image: "/shop/p/ivory-wheels-card.jpg",
+    gallery: ["/shop/p/ivory-wheels-main.jpg"],
     accent: "#2a2622",
   },
   {
@@ -129,6 +134,8 @@ export const PRODUCTS: Product[] = [
     price: 25,
     tagline: "12\" vinyl. 180 g. The late-night side of the shop playlist.",
     details: ["12\" / 180 g", "Limited pressing of 500", "Includes digital download", "Sleeve by Rectangle's studio"],
+    image: "/shop/p/sessions-02-card.jpg",
+    gallery: ["/shop/p/sessions-02-main.jpg"],
     accent: "#101216",
   },
   {
@@ -140,6 +147,8 @@ export const PRODUCTS: Product[] = [
     price: 18,
     tagline: "Felt slipmat with the framed mark. One per platter.",
     details: ["12\" felt, 2 mm", "Screen-printed", "Sold individually"],
+    image: "/shop/p/framed-slipmat-card.jpg",
+    gallery: ["/shop/p/framed-slipmat-main.jpg"],
     accent: "#1a1a1c",
   },
   {
@@ -151,6 +160,8 @@ export const PRODUCTS: Product[] = [
     price: 38,
     tagline: "A two-button pad that feels like the one you grew up with. Works over USB-C.",
     details: ["USB-C, 1.8 m cable", "D-pad + 2 face buttons + 2 shoulder", "Works with PC, Mac and handhelds"],
+    image: "/shop/p/ivory-pad-card.jpg",
+    gallery: ["/shop/p/ivory-pad-main.jpg"],
     accent: "#23252a",
   },
   {
@@ -162,6 +173,8 @@ export const PRODUCTS: Product[] = [
     price: 20,
     tagline: "The Night Shift box art, big enough to read the small print.",
     details: ["50 × 70 cm", "170 gsm uncoated paper", "Shipped rolled"],
+    image: "/shop/p/night-shift-poster-card.jpg",
+    gallery: ["/shop/p/night-shift-poster-main.jpg"],
     accent: "#14171c",
   },
   {
@@ -178,6 +191,9 @@ export const PRODUCTS: Product[] = [
       { id: "off-white", label: "Off-white", swatch: "#ece8df" },
     ],
     sizes: ["S", "M", "L", "XL"],
+    image: "/shop/p/desktop-hoodie-card.jpg",
+    gallery: ["/shop/p/desktop-hoodie-main.jpg", "/shop/p/desktop-hoodie-main-2.jpg"],
+    colorShots: { black: 0, "off-white": 1 },
     accent: "#1c2740",
   },
   {
@@ -189,6 +205,8 @@ export const PRODUCTS: Product[] = [
     price: 8,
     tagline: "Six die-cut stickers for laptops, decks and beige boxes.",
     details: ["6 die-cut vinyl stickers", "Weatherproof", "Matte finish"],
+    image: "/shop/p/old-hardware-stickers-card.jpg",
+    gallery: ["/shop/p/old-hardware-stickers-main.jpg"],
     accent: "#20262e",
   },
   {
@@ -200,6 +218,8 @@ export const PRODUCTS: Product[] = [
     price: 42,
     tagline: "A pair of raw aluminium trucks. No paint to chip, nothing to hide.",
     details: ["5.25\" hanger, 8.25\" axle", "Sold as a pair", "Raw cast aluminium", "Bushings and pivot cups installed"],
+    image: "/shop/p/raw-trucks-card.jpg",
+    gallery: ["/shop/p/raw-trucks-main.jpg"],
     accent: "#24272b",
   },
   {
@@ -211,6 +231,8 @@ export const PRODUCTS: Product[] = [
     price: 8,
     tagline: "One sheet of coarse black grip with a die-cut frame.",
     details: ["9\" × 33\" sheet", "Die-cut framed mark", "Bubble-free perforation"],
+    image: "/shop/p/classic-grip-card.jpg",
+    gallery: ["/shop/p/classic-grip-main.jpg"],
     accent: "#121314",
   },
   {
@@ -222,6 +244,8 @@ export const PRODUCTS: Product[] = [
     price: 32,
     tagline: "Fresh needle, fewer excuses. Fits the turntables we sell in the shop.",
     details: ["Elliptical diamond tip", "Tracking force 1.5–2.5 g", "Fits standard half-inch mounts"],
+    image: "/shop/p/needle-stylus-card.jpg",
+    gallery: ["/shop/p/needle-stylus-main.jpg"],
     accent: "#1b1d22",
   },
   {
@@ -233,6 +257,8 @@ export const PRODUCTS: Product[] = [
     price: 48,
     tagline: "Stackable plywood crate for about eighty records. Stencilled, not stickered.",
     details: ["Holds ~80 LPs", "12 mm birch plywood", "Stencilled framed mark", "Ships flat-packed"],
+    image: "/shop/p/record-crate-card.jpg",
+    gallery: ["/shop/p/record-crate-main.jpg"],
     accent: "#2b2218",
   },
   {
@@ -244,6 +270,8 @@ export const PRODUCTS: Product[] = [
     price: 22,
     tagline: "The full Night Shift score on cassette, with a download code.",
     details: ["Cassette, 42 minutes", "Includes digital download", "Printed J-card with liner notes"],
+    image: "/shop/p/night-shift-ost-card.jpg",
+    gallery: ["/shop/p/night-shift-ost-main.jpg"],
     accent: "#171a22",
   },
   {
@@ -255,6 +283,8 @@ export const PRODUCTS: Product[] = [
     price: 26,
     tagline: "A hard case for twelve cartridges and the cable you always forget.",
     details: ["Holds 12 cartridges", "Hard shell, felt lining", "Mesh cable pocket"],
+    image: "/shop/p/cartridge-case-card.jpg",
+    gallery: ["/shop/p/cartridge-case-main.jpg"],
     accent: "#1e2126",
   },
   {
@@ -266,6 +296,8 @@ export const PRODUCTS: Product[] = [
     price: 22,
     tagline: "The exploded-view drawing from the tee, where your mouse can study it.",
     details: ["300 × 250 mm", "Stitched edge", "Natural rubber base"],
+    image: "/shop/p/technical-mousepad-card.jpg",
+    gallery: ["/shop/p/technical-mousepad-main.jpg"],
     accent: "#1a2233",
   },
   {
@@ -277,6 +309,8 @@ export const PRODUCTS: Product[] = [
     price: 64,
     tagline: "Two-tone beige and grey caps, like the keyboards that taught us to type.",
     details: ["PBT, dye-sublimated legends", "Fits MX-style switches", "ANSI and ISO kits included"],
+    image: "/shop/p/beige-keycaps-card.jpg",
+    gallery: ["/shop/p/beige-keycaps-main.jpg"],
     accent: "#2c2a25",
   },
 ];
