@@ -2,7 +2,9 @@
 
 import Lenis from "lenis";
 import { useEffect, type ReactNode } from "react";
+import { KEYFRAMES } from "@/scenes/store/keyframes";
 import { reachableStops, useScroll } from "@/stores/scroll";
+import { useTravel } from "@/stores/travel";
 
 /** The live Lenis instance (null before mount or under reduced motion). */
 let lenisInstance: Lenis | null = null;
@@ -38,9 +40,21 @@ export function scrollToSection(index: number) {
     return;
   }
   const from = useScroll.getState().stop;
-  const distance = Math.abs(index - from); // in stops
-  const duration = Math.min(1.6 + distance * 0.9, 5);
-  lenisInstance.scrollTo(target, { duration, easing: easeInOutCubic });
+  const to = Math.min(index, last);
+  // Jumps of more than one stop fly straight to the target (no detour
+  // through the stops in between); duration follows the real distance.
+  const direct = Math.abs(to - from) > 1.05;
+  const a = KEYFRAMES[Math.round(from)].position;
+  const b = KEYFRAMES[to].position;
+  const meters = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  const duration = direct ? Math.min(Math.max(1.3 + meters * 0.12, 1.5), 3.2) : Math.min(1.6 + Math.abs(to - from) * 0.9, 5);
+  if (direct) useTravel.getState().start(from, to);
+  else useTravel.getState().end();
+  lenisInstance.scrollTo(target, {
+    duration,
+    easing: easeInOutCubic,
+    onComplete: () => useTravel.getState().end(),
+  });
 }
 
 /**
@@ -77,6 +91,18 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     lenis.on("scroll", emit);
     lenisInstance = lenis;
 
+    // Any manual scroll input cancels a direct flight (the camera then
+    // eases back onto the regular path from wherever it is).
+    const cancelTravel = () => {
+      if (useTravel.getState().active) useTravel.getState().end();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(e.key)) cancelTravel();
+    };
+    window.addEventListener("wheel", cancelTravel, { passive: true });
+    window.addEventListener("touchstart", cancelTravel, { passive: true });
+    window.addEventListener("keydown", onKey);
+
     let raf = 0;
     const tick = (time: number) => {
       lenis.raf(time);
@@ -87,6 +113,9 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
     return () => {
       cancelAnimationFrame(raf);
+      window.removeEventListener("wheel", cancelTravel);
+      window.removeEventListener("touchstart", cancelTravel);
+      window.removeEventListener("keydown", onKey);
       lenis.destroy();
       lenisInstance = null;
     };

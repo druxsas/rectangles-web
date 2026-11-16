@@ -9,6 +9,7 @@ import { SCREEN, ZOOM_SECONDS, screenFrame } from "@/scenes/store/imacPose";
 import { KEYFRAMES } from "@/scenes/store/keyframes";
 import { useCheckout } from "@/stores/checkout";
 import { useScroll } from "@/stores/scroll";
+import { useTravel } from "@/stores/travel";
 
 const SEGMENTS = KEYFRAMES.length - 1;
 
@@ -21,6 +22,14 @@ const outLook = new Vector3();
 const outUp = new Vector3();
 const WORLD_UP = new Vector3(0, 1, 0);
 const lookDir = new Vector3();
+const travelStartPos = new Vector3();
+const travelStartLook = new Vector3();
+const travelLastPos = new Vector3();
+const travelLastLook = new Vector3();
+const travelTargetPos = new Vector3();
+const travelTargetLook = new Vector3();
+/** Seconds to ease from an interrupted flight back onto the scroll path. */
+const TRAVEL_RELEASE = 1.2;
 
 function ease(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -31,7 +40,17 @@ const SCREEN_FOV = 34;
 /** Share of the viewport the display should fill — leaves the bezel visible. */
 const SCREEN_FILL = 0.8;
 
-type RigState = { blend: number; locked: boolean; yaw: number };
+type RigState = {
+  blend: number;
+  locked: boolean;
+  yaw: number;
+  /** Direct-flight bookkeeping (menu / hotspot jumps). */
+  traveling: boolean;
+  travelStartFov: number;
+  travelLastFov: number;
+  /** 1 right after a flight ends, decaying to 0 — blends back onto the path. */
+  travelRelease: number;
+};
 
 /** Keyframe fovs are authored for a 16:10 desktop viewport. */
 const AUTHORED_ASPECT = 1.6;
@@ -65,7 +84,44 @@ function step(
   const b = KEYFRAMES[i + 1];
   pathPos.set(...a.position).lerp(nextPos.set(...b.position), t);
   pathLook.set(...a.lookAt).lerp(nextLook.set(...b.lookAt), t);
-  const pathFov = portraitFov(MathUtils.lerp(a.fov, b.fov, t), aspect);
+  let pathFov = portraitFov(MathUtils.lerp(a.fov, b.fov, t), aspect);
+
+  // --- Direct flight between stops (menu / hotspot click): straight line
+  // from where the camera was to the target, skipping the stops between.
+  // The scroll still advances underneath and serves as the flight timeline.
+  const travel = useTravel.getState();
+  if (travel.active) {
+    if (!rig.traveling) {
+      rig.traveling = true;
+      travelStartPos.copy(pathPos);
+      travelStartLook.copy(pathLook);
+      rig.travelStartFov = pathFov;
+    }
+    const k = KEYFRAMES[travel.to];
+    travelTargetPos.set(...k.position);
+    travelTargetLook.set(...k.lookAt);
+    const span = travel.to - travel.from;
+    const u = span === 0 ? 1 : MathUtils.clamp((stop - travel.from) / span, 0, 1);
+    pathPos.copy(travelStartPos).lerp(travelTargetPos, u);
+    pathLook.copy(travelStartLook).lerp(travelTargetLook, u);
+    pathFov = MathUtils.lerp(rig.travelStartFov, portraitFov(k.fov, aspect), u);
+    travelLastPos.copy(pathPos);
+    travelLastLook.copy(pathLook);
+    rig.travelLastFov = pathFov;
+    rig.travelRelease = 1;
+  } else {
+    rig.traveling = false;
+    if (rig.travelRelease > 0) {
+      // Interrupted (e.g. the visitor scrolled mid-flight): ease back onto the path.
+      rig.travelRelease = Math.max(0, rig.travelRelease - dt / TRAVEL_RELEASE);
+      // Smoothstep (gentler at the start than the cubic ease).
+      const r = rig.travelRelease;
+      const w = r * r * (3 - 2 * r);
+      pathPos.lerp(travelLastPos, w);
+      pathLook.lerp(travelLastLook, w);
+      pathFov = MathUtils.lerp(pathFov, rig.travelLastFov, w);
+    }
+  }
 
   // --- Desktop look-around (mouse + arrows), inside the shop only
   const open0 = useCheckout.getState().isOpen;
@@ -124,7 +180,15 @@ function step(
  */
 export function CameraRig() {
   const { camera, size } = useThree();
-  const rig = useRef<RigState>({ blend: 0, locked: false, yaw: 0 });
+  const rig = useRef<RigState>({
+    blend: 0,
+    locked: false,
+    yaw: 0,
+    traveling: false,
+    travelStartFov: 0,
+    travelLastFov: 0,
+    travelRelease: 0,
+  });
 
   // Track the mouse on fine-pointer (desktop) devices only.
   useEffect(() => {
