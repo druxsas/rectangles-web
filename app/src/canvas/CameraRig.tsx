@@ -6,7 +6,7 @@ import { MathUtils, Vector3, type PerspectiveCamera } from "three";
 import { setScrollLocked } from "@/components/smooth-scroll";
 import { ARROW_DEG, MAX_DEG, isInside, mouseYawDeg, pointer, useLook } from "@/canvas/lookAround";
 import { SCREEN, ZOOM_SECONDS, screenFrame } from "@/scenes/store/imacPose";
-import { KEYFRAMES } from "@/scenes/store/keyframes";
+import { DOOR_CLEAR, DOOR_PASS, KEYFRAMES } from "@/scenes/store/keyframes";
 import { useCheckout } from "@/stores/checkout";
 import { useListening } from "@/stores/listening";
 import { useScroll } from "@/stores/scroll";
@@ -30,8 +30,26 @@ const travelLastPos = new Vector3();
 const travelLastLook = new Vector3();
 const travelTargetPos = new Vector3();
 const travelTargetLook = new Vector3();
+const doorPos = new Vector3(...DOOR_PASS);
+const doorLook = new Vector3();
+const doorTan = new Vector3();
+const lookSpan = new Vector3();
+const tanA = new Vector3();
+const tanB = new Vector3();
 /** Seconds to ease from an interrupted flight back onto the scroll path. */
 const TRAVEL_RELEASE = 1.2;
+
+/** Cubic Hermite from p0 to p1 with tangents m0 / m1 (in units per segment). */
+function hermite(out: Vector3, p0: Vector3, p1: Vector3, m0: Vector3, m1: Vector3, t: number) {
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return out
+    .copy(p0)
+    .multiplyScalar(2 * t3 - 3 * t2 + 1)
+    .addScaledVector(m0, t3 - 2 * t2 + t)
+    .addScaledVector(p1, -2 * t3 + 3 * t2)
+    .addScaledVector(m1, t3 - t2);
+}
 
 function ease(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -75,8 +93,14 @@ type RigState = {
   yaw: number;
   /** Direct-flight bookkeeping (menu / hotspot jumps). */
   traveling: boolean;
+  travelFrom: number;
+  travelTo: number;
   travelStartFov: number;
   travelLastFov: number;
+  /** Flight crosses the storefront away from the door → go via the doorway. */
+  travelViaDoor: boolean;
+  /** Share of the flight (0–1) spent before reaching the doorway. */
+  travelSplit: number;
   /** 1 right after a flight ends, decaying to 0 — blends back onto the path. */
   travelRelease: number;
   /** 0 walking → 1 close on the turntable. */
@@ -120,21 +144,64 @@ function step(
   // --- Direct flight between stops (menu / hotspot click): straight line
   // from where the camera was to the target, skipping the stops between.
   // The scroll still advances underneath and serves as the flight timeline.
+  // A flight between the street and the shop goes through the doorway (a
+  // straight line would cut through the storefront glass).
   const travel = useTravel.getState();
   if (travel.active) {
-    if (!rig.traveling) {
-      rig.traveling = true;
-      travelStartPos.copy(pathPos);
-      travelStartLook.copy(pathLook);
-      rig.travelStartFov = pathFov;
-    }
     const k = KEYFRAMES[travel.to];
     travelTargetPos.set(...k.position);
     travelTargetLook.set(...k.lookAt);
+    if (!rig.traveling || rig.travelFrom !== travel.from || rig.travelTo !== travel.to) {
+      // A new flight: start from the path, or from mid-air if one was under way.
+      if (rig.traveling) {
+        travelStartPos.copy(travelLastPos);
+        travelStartLook.copy(travelLastLook);
+        rig.travelStartFov = rig.travelLastFov;
+      } else {
+        travelStartPos.copy(pathPos);
+        travelStartLook.copy(pathLook);
+        rig.travelStartFov = pathFov;
+      }
+      rig.traveling = true;
+      rig.travelFrom = travel.from;
+      rig.travelTo = travel.to;
+
+      const z0 = travelStartPos.z - doorPos.z;
+      const z1 = travelTargetPos.z - doorPos.z;
+      rig.travelViaDoor = false;
+      if (z0 * z1 < 0) {
+        const xCross = MathUtils.lerp(travelStartPos.x, travelTargetPos.x, z0 / (z0 - z1));
+        if (Math.abs(xCross - doorPos.x) > DOOR_CLEAR) {
+          const before = travelStartPos.distanceTo(doorPos);
+          const after = doorPos.distanceTo(travelTargetPos);
+          rig.travelViaDoor = true;
+          rig.travelSplit = before / (before + after);
+          // Cross the doorway square to the facade, at the flight's speed.
+          doorTan.set(0, 0, Math.sign(z1) * (before + after));
+          // In the doorway, look ahead into the shop, already turning toward
+          // (or still turning away from) the stop inside.
+          doorLook.set(...KEYFRAMES[1].lookAt).lerp(z1 < 0 ? travelTargetLook : travelStartLook, 0.5);
+        }
+      }
+    }
     const span = travel.to - travel.from;
     const u = span === 0 ? 1 : MathUtils.clamp((stop - travel.from) / span, 0, 1);
-    pathPos.copy(travelStartPos).lerp(travelTargetPos, u);
-    pathLook.copy(travelStartLook).lerp(travelTargetLook, u);
+    if (rig.travelViaDoor) {
+      const s = rig.travelSplit;
+      lookSpan.copy(travelTargetLook).sub(travelStartLook);
+      if (u < s) {
+        const t = u / s;
+        hermite(pathPos, travelStartPos, doorPos, tanA.copy(doorPos).sub(travelStartPos), tanB.copy(doorTan).multiplyScalar(s), t);
+        hermite(pathLook, travelStartLook, doorLook, tanA.copy(doorLook).sub(travelStartLook), tanB.copy(lookSpan).multiplyScalar(s), t);
+      } else {
+        const t = (u - s) / (1 - s);
+        hermite(pathPos, doorPos, travelTargetPos, tanA.copy(doorTan).multiplyScalar(1 - s), tanB.copy(travelTargetPos).sub(doorPos), t);
+        hermite(pathLook, doorLook, travelTargetLook, tanA.copy(lookSpan).multiplyScalar(1 - s), tanB.copy(travelTargetLook).sub(doorLook), t);
+      }
+    } else {
+      pathPos.copy(travelStartPos).lerp(travelTargetPos, u);
+      pathLook.copy(travelStartLook).lerp(travelTargetLook, u);
+    }
     pathFov = MathUtils.lerp(rig.travelStartFov, portraitFov(k.fov, aspect), u);
     travelLastPos.copy(pathPos);
     travelLastLook.copy(pathLook);
@@ -234,6 +301,10 @@ export function CameraRig() {
     locked: false,
     yaw: 0,
     traveling: false,
+    travelFrom: 0,
+    travelTo: 0,
+    travelViaDoor: false,
+    travelSplit: 0,
     travelStartFov: 0,
     travelLastFov: 0,
     travelRelease: 0,
