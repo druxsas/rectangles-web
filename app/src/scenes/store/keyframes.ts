@@ -78,3 +78,12 @@ export const KEYFRAMES: Keyframe[] = [
 ];
 
 export const SECTION_COUNT = KEYFRAMES.length;
+
+/**
+ * Centre of the open doorway at camera height. Direct flights (menu /
+ * hotspot jumps) that cross the storefront are routed through this point so
+ * the camera walks in through the door instead of through the glass.
+ */
+export const DOOR_PASS: [number, number, number] = [0, 1.65, 5];
+/** Half-width around the door centre where a straight crossing is already fine. */
+export const DOOR_CLEAR = 0.45;
