@@ -167,19 +167,19 @@ export function Exterior() {
       <DoorLeaf side={-1} />
       <DoorLeaf side={1} decal />
 
-      {/* Lettering on the building face, right of the storefront */}
+      {/* Lettering on the building face, right of the storefront (lit, dimmed
+          a touch so the bloom doesn't fill the letters) */}
       {["SKATE", "MUSIC", "GAMES", "APPAREL"].map((w, i) => (
         <Text
           key={w}
           position={[6.4, 2.75 - i * 0.34, FRONT_Z + 0.04]}
           font={ANTON_TTF}
           fontSize={0.3}
-          // Painted on the wall, not a light: kept under the bloom threshold
-          // so the letters stay sharp instead of glowing like neon.
-          color="#a9a69d"
+          color="#d9d7d0"
           letterSpacing={0.04}
           anchorX="left"
           anchorY="middle"
+          material-toneMapped={false}
         >
           {w}
         </Text>
