@@ -51,6 +51,17 @@ function hermite(out: Vector3, p0: Vector3, p1: Vector3, m0: Vector3, m1: Vector
     .addScaledVector(m1, t3 - t2);
 }
 
+/**
+ * `?cam=x,y,z,lookX,lookY,lookZ[,fov]` pins the camera to a fixed pose
+ * (measurement / screenshot aid, like `?debug=1`).
+ */
+const CAM_OVERRIDE = (() => {
+  if (typeof window === "undefined") return null;
+  const v = new URLSearchParams(window.location.search).get("cam")?.split(",").map(Number);
+  if (!v || v.length < 6 || v.some(Number.isNaN)) return null;
+  return { pos: new Vector3(v[0], v[1], v[2]), look: new Vector3(v[3], v[4], v[5]), fov: v[6] ?? 50 };
+})();
+
 function ease(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
@@ -267,6 +278,17 @@ function step(
     const pose = aspect < 1 ? LISTEN_TALL : LISTEN_WIDE;
     outPos.lerp(pose.pos, wl);
     outLook.lerp(pose.look, wl);
+  }
+
+  if (CAM_OVERRIDE) {
+    camera.position.copy(CAM_OVERRIDE.pos);
+    camera.up.copy(WORLD_UP);
+    camera.lookAt(CAM_OVERRIDE.look);
+    if (camera.fov !== CAM_OVERRIDE.fov) {
+      camera.fov = CAM_OVERRIDE.fov;
+      camera.updateProjectionMatrix();
+    }
+    return;
   }
 
   camera.position.copy(outPos);

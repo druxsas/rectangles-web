@@ -8,6 +8,7 @@ import { IMAC } from "@/scenes/store/imacPose";
 import { useTvTexture } from "@/scenes/store/TvScreen";
 import { Exterior } from "@/scenes/store/Exterior";
 import { LogoPlane } from "@/scenes/store/LogoPlane";
+import { Stickers } from "@/scenes/store/Stickers";
 import { RecordCrate } from "@/scenes/store/RecordCrate";
 import { useListening } from "@/stores/listening";
 import { Deck, type DeckArtName } from "@/scenes/store/DeckArt";
@@ -504,6 +505,7 @@ export function Store() {
       <MusicZone />
       <GamesZone />
       <Furnishings />
+      <Stickers />
     </group>
   );
 }

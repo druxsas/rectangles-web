@@ -1,0 +1,390 @@
+"use client";
+
+import { useTexture } from "@react-three/drei";
+import { useMemo } from "react";
+import { BufferGeometry, Euler, Float32BufferAttribute, Matrix4, Quaternion, SRGBColorSpace, Vector3, type Texture } from "three";
+import { IMAC } from "@/scenes/store/imacPose";
+import { STICKER_ATLAS, STICKER_NAMES, STICKERS, type StickerName } from "@/scenes/store/stickers.data";
+
+/**
+ * Rectangle's sticker collection, slapped around the shop the way stickers
+ * end up in a skate shop: thick on the counter top, a handful on the back of
+ * the iMac, the white plinths and the bench outside.
+ *
+ * Every sticker is a quad cut from one atlas (scripts/optimize-stickers.mjs);
+ * each surface is a single merged mesh, so the whole lot costs a few draw
+ * calls and no extra lights. Layouts come from a seeded generator: random
+ * positions, sizes and angles, identical on every visit.
+ */
+
+type Placement = {
+  name: StickerName;
+  pos: Vector3;
+  normal: Vector3;
+  /** Direction the sticker's top edge points to before `angle` is applied. */
+  up: Vector3;
+  /** Rotation about the normal, radians. */
+  angle: number;
+  /** Side of the square with the sticker's area, metres. */
+  size: number;
+};
+
+/** Stickers sit this far off the surface (they don't write depth, see material). */
+const LIFT = 0.0006;
+
+function mulberry32(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Deals every design before repeating one, so the mix stays varied. */
+function dealer(rng: () => number) {
+  let bag: StickerName[] = [];
+  return () => {
+    if (!bag.length) {
+      bag = [...STICKER_NAMES];
+      for (let i = bag.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [bag[i], bag[j]] = [bag[j], bag[i]];
+      }
+    }
+    return bag.pop()!;
+  };
+}
+
+/**
+ * Angle of a sticker put down without much thought: mostly "roughly
+ * straight" for someone standing on one side or the other, crooked by a few
+ * degrees, with a fair share stuck on at any angle at all.
+ */
+function casualAngle(rng: () => number) {
+  const r = rng();
+  if (r < 0.32) return rng() * Math.PI * 2;
+  const base = r < 0.7 ? 0 : r < 0.84 ? Math.PI : r < 0.92 ? Math.PI / 2 : -Math.PI / 2;
+  // Sum of uniforms ≈ bell curve, ±~28°.
+  return base + (rng() + rng() + rng() - 1.5) * 0.65;
+}
+
+function extent(name: StickerName, size: number) {
+  const a = Math.sqrt(STICKERS[name].aspect);
+  return { w: size * a, h: size / a };
+}
+
+type Patch = {
+  center: Vector3;
+  normal: Vector3;
+  up: Vector3;
+  /** Size along the patch's right (up × normal) and up axes. */
+  width: number;
+  height: number;
+};
+
+/** Random stickers over a flat rectangular patch, kept inside its edges. */
+function scatter(
+  rng: () => number,
+  deal: () => StickerName,
+  patch: Patch,
+  count: number,
+  size: [number, number],
+  opts: { angle?: (name: StickerName) => number; avoid?: (u: number, v: number, radius: number) => boolean } = {},
+): Placement[] {
+  const right = new Vector3().crossVectors(patch.up, patch.normal).normalize();
+  const out: Placement[] = [];
+  let guard = count * 30;
+  while (out.length < count && guard-- > 0) {
+    const name = deal();
+    const s = size[0] + rng() * (size[1] - size[0]);
+    const { w, h } = extent(name, s);
+    const radius = Math.hypot(w, h) / 2;
+    const spanU = patch.width / 2 - radius * 0.92;
+    const spanV = patch.height / 2 - radius * 0.92;
+    if (spanU < 0 || spanV < 0) continue;
+    const u = (rng() * 2 - 1) * spanU;
+    const v = (rng() * 2 - 1) * spanV;
+    if (opts.avoid?.(u, v, radius)) continue;
+    out.push({
+      name,
+      pos: patch.center.clone().addScaledVector(right, u).addScaledVector(patch.up, v),
+      normal: patch.normal,
+      up: patch.up,
+      angle: opts.angle ? opts.angle(name) : casualAngle(rng),
+      size: s,
+    });
+  }
+  return out;
+}
+
+const X = new Vector3(1, 0, 0);
+const Y = new Vector3(0, 1, 0);
+const Z = new Vector3(0, 0, 1);
+const neg = (v: Vector3) => v.clone().negate();
+
+// ----------------------------------------------------------------
+// Counter top — the sticker-bombed one
+// ----------------------------------------------------------------
+/**
+ * Years of stickers on a shop counter: each one put down where there was
+ * room, so they sit side by side with the odd corner over a neighbour rather
+ * than in piles. A few big ones went on first and the small ones filled in
+ * around them; some stretches are packed, others still show the steel.
+ */
+function counterTop(): Placement[] {
+  const rng = mulberry32(39);
+  const deal = dealer(rng);
+  // Top slab: 4.5 × 0.85 m at y = 1.0, centred on z = -3.67 (see Store.tsx).
+  const W = 4.5;
+  const D = 0.85;
+  const center = new Vector3(0, 1.0, -3.67);
+  const up = neg(Z);
+
+  // Busy spots (u along the counter, v toward the back wall) and how far they reach.
+  const hubs = Array.from({ length: 7 }, () => ({ u: (rng() - 0.5) * W * 0.92, v: (rng() - 0.5) * D * 0.7, r: 0.28 + rng() * 0.3 }));
+  const density = (u: number, v: number) => {
+    let d = 0.16;
+    for (const h of hubs) d += Math.exp(-((u - h.u) ** 2 + (v - h.v) ** 2) / (2 * h.r * h.r));
+    // The customers' edge collects more than the vendor's.
+    return Math.min(1, d * (0.75 - (v / D) * 0.5));
+  };
+
+  // Each sticker is covered by circles along its long side for the spacing test.
+  type Disc = { u: number; v: number; r: number };
+  const placed: Disc[] = [];
+  const discs = (u: number, v: number, w: number, h: number, angle: number): Disc[] => {
+    const long = Math.max(w, h);
+    const short = Math.min(w, h);
+    const n = Math.max(1, Math.round(long / short));
+    const a = angle + (w >= h ? 0 : Math.PI / 2);
+    return Array.from({ length: n }, (_, i) => {
+      const t = n === 1 ? 0 : (i / (n - 1) - 0.5) * (long - short);
+      return { u: u + Math.cos(a) * t, v: v + Math.sin(a) * t, r: short / 2 };
+    });
+  };
+
+  const out: Placement[] = [];
+  const tiers: { count: number; size: [number, number] }[] = [
+    { count: 14, size: [0.115, 0.14] },
+    { count: 60, size: [0.085, 0.108] },
+    { count: 150, size: [0.058, 0.082] },
+  ];
+  for (const tier of tiers) {
+    let made = 0;
+    for (let tries = 0; made < tier.count && tries < tier.count * 60; tries++) {
+      const u = (rng() - 0.5) * W;
+      const v = (rng() - 0.5) * D;
+      if (rng() > density(u, v)) continue;
+      const name = deal();
+      const size = tier.size[0] + rng() * (tier.size[1] - tier.size[0]);
+      const { w, h } = extent(name, size);
+      const radius = Math.hypot(w, h) / 2;
+      if (Math.abs(u) > W / 2 - radius * 0.9 || Math.abs(v) > D / 2 - radius * 0.9) continue;
+      const angle = casualAngle(rng);
+      const mine = discs(u, v, w, h, angle);
+      // Mostly clear of the neighbours; now and then a corner lands on one.
+      const slack = rng() < 0.14 ? 0.62 : 0.94;
+      if (mine.some((m) => placed.some((q) => Math.hypot(m.u - q.u, m.v - q.v) < (m.r + q.r) * slack))) continue;
+      placed.push(...mine);
+      out.push({ name, pos: center.clone().add(new Vector3(u, 0, -v)), normal: Y, up, angle, size });
+      made++;
+    }
+  }
+  return out;
+}
+
+// ----------------------------------------------------------------
+// Back of the iMac — a few, clear of the Apple logo and the stand
+// ----------------------------------------------------------------
+/** Spots on the rear shell in the iMac's local space: [x, y, z, nx, ny, nz, angle, size]. */
+// Positions and normals sampled from the model's rear shell (it bulges and
+// leans back); the Apple logo spans x ±0.026, y 0.363–0.425 and stays clear.
+const IMAC_BACK: [StickerName, number, number, number, number, number, number, number, number][] = [
+  ["04-monogram", -0.2, 0.42, -0.1085, -0.075, -0.018, -0.997, 0.28, 0.062],
+  ["26-extra-life", 0.19, 0.41, -0.109, 0.075, -0.029, -0.997, -0.35, 0.058],
+  ["09-skate-truck", 0.215, 0.25, -0.0839, 0.179, -0.188, -0.966, 0.5, 0.06],
+  ["18-press-play", -0.2, 0.2, -0.0756, -0.133, -0.235, -0.963, -0.2, 0.064],
+  ["01-framed-logo", 0.12, 0.33, -0.1086, 0.069, -0.11, -0.992, -0.12, 0.052],
+  ["12-cassette", -0.13, 0.3, -0.1038, -0.081, -0.15, -0.985, 0.42, 0.056],
+];
+
+function imacBack(): Placement[] {
+  const m = new Matrix4().compose(new Vector3(...IMAC.position), new Quaternion().setFromEuler(new Euler(0, IMAC.yaw, 0)), new Vector3(1, 1, 1));
+  const rot = new Matrix4().extractRotation(m);
+  return IMAC_BACK.map(([name, x, y, z, nx, ny, nz, angle, size]) => {
+    const normal = new Vector3(nx, ny, nz).normalize();
+    // "Up" along the shell: world up made perpendicular to the normal.
+    const up = Y.clone().addScaledVector(normal, -normal.y).normalize();
+    return { name, pos: new Vector3(x, y, z).applyMatrix4(m), normal: normal.applyMatrix4(rot), up: up.applyMatrix4(rot), angle, size };
+  });
+}
+
+// ----------------------------------------------------------------
+// White plinths — the deck plinth and the marble cubes under the plants
+// ----------------------------------------------------------------
+function plinths(): Placement[] {
+  const rng = mulberry32(7);
+  const deal = dealer(rng);
+  const out: Placement[] = [];
+
+  // Deck plinth (Store.tsx SkateZone): 0.7 × 0.4 × 1.2 m box at (-4.75, 0.2, -2.0).
+  const c = new Vector3(-4.75, 0.2, -2.0);
+  out.push(
+    // Long face toward the room.
+    ...scatter(rng, deal, { center: c.clone().add(new Vector3(0.35, 0, 0)), normal: X, up: Y, width: 1.2, height: 0.4 }, 4, [0.095, 0.13]),
+    // End toward the entrance.
+    ...scatter(rng, deal, { center: c.clone().add(new Vector3(0, 0, 0.6)), normal: Z, up: Y, width: 0.7, height: 0.4 }, 2, [0.095, 0.125]),
+    // Top, around the deck on display.
+    ...scatter(rng, deal, { center: c.clone().add(new Vector3(0, 0.2, 0)), normal: Y, up: neg(X), width: 1.2, height: 0.7 }, 3, [0.075, 0.095], {
+      avoid: (u, v, r) => Math.abs(u) < 0.46 + r && Math.abs(v) < 0.2 + r,
+    }),
+  );
+
+  // Marble cubes of the plant arrangements, in the model's normalized space:
+  // [min x, min z, side] (they stand on the floor). See PlantsHQ in Store.tsx.
+  const cubes: [number, number, number][] = [
+    [0.13, 0.409, 0.421],
+    [0.183, -0.522, 0.566],
+  ];
+  const arrangements: { position: [number, number, number]; yaw: number }[] = [
+    { position: [-5.05, 0, -4.05], yaw: 0.6 },
+    { position: [4.95, 0, 3.95], yaw: -2.4 },
+  ];
+  for (const a of arrangements) {
+    const m = new Matrix4().compose(new Vector3(...a.position), new Quaternion().setFromEuler(new Euler(0, a.yaw, 0)), new Vector3(1, 1, 1));
+    const rot = new Matrix4().extractRotation(m);
+    for (const [x0, z0, side] of cubes) {
+      const centre = new Vector3(x0 + side / 2, side / 2, z0 + side / 2);
+      for (const dir of [X, neg(X), Z, neg(Z)]) {
+        const faceCentre = centre.clone().addScaledVector(dir, side / 2).applyMatrix4(m);
+        const normal = dir.clone().applyMatrix4(rot);
+        // Only faces that look into the room get stickers.
+        const toRoom = new Vector3(0, faceCentre.y, 0).sub(faceCentre).normalize();
+        if (normal.dot(toRoom) < 0.35) continue;
+        out.push(...scatter(rng, deal, { center: faceCentre, normal, up: Y, width: side, height: side }, side > 0.5 ? 2 : 1, [0.1, 0.14]));
+      }
+    }
+  }
+  return out;
+}
+
+// ----------------------------------------------------------------
+// Bench on the sidewalk
+// ----------------------------------------------------------------
+function bench(): Placement[] {
+  const rng = mulberry32(58);
+  const deal = dealer(rng);
+  // Bench at (-3.3, 0, 5.45) (Exterior.tsx): two 1.5 × 0.16 m planks, top at
+  // y = 0.47; steel legs at x ± 0.62, 0.36 deep × 0.44 tall.
+  const o = new Vector3(-3.3, 0, 5.45);
+  // On a 16 cm plank a long sticker only fits lengthwise.
+  const alongPlank = (name: StickerName) => (STICKERS[name].aspect > 1.4 ? (rng() - 0.5) * 0.35 + (rng() < 0.25 ? Math.PI : 0) : casualAngle(rng));
+  const plank = (dz: number): Patch => ({ center: o.clone().add(new Vector3(0, 0.47, dz)), normal: Y, up: neg(Z), width: 1.42, height: 0.16 });
+  return [
+    ...scatter(rng, deal, plank(0.09), 4, [0.068, 0.085], { angle: alongPlank }),
+    ...scatter(rng, deal, plank(-0.09), 3, [0.068, 0.085], { angle: alongPlank }),
+    ...scatter(rng, deal, { center: o.clone().add(new Vector3(0.645, 0.24, 0)), normal: X, up: Y, width: 0.36, height: 0.4 }, 1, [0.1, 0.12]),
+    ...scatter(rng, deal, { center: o.clone().add(new Vector3(-0.645, 0.24, 0)), normal: neg(X), up: Y, width: 0.36, height: 0.4 }, 1, [0.085, 0.1]),
+  ];
+}
+
+// ----------------------------------------------------------------
+// Geometry
+// ----------------------------------------------------------------
+function build(placements: Placement[]) {
+  const origin = new Vector3();
+  for (const p of placements) origin.add(p.pos);
+  origin.divideScalar(Math.max(placements.length, 1));
+
+  const position: number[] = [];
+  const normal: number[] = [];
+  const uv: number[] = [];
+  const index: number[] = [];
+  const right = new Vector3();
+  const r = new Vector3();
+  const u = new Vector3();
+  const corner = new Vector3();
+  placements.forEach((p, i) => {
+    const { w, h } = extent(p.name, p.size);
+    right.crossVectors(p.up, p.normal).normalize();
+    const cos = Math.cos(p.angle);
+    const sin = Math.sin(p.angle);
+    r.copy(right).multiplyScalar(cos).addScaledVector(p.up, sin);
+    u.copy(p.up).multiplyScalar(cos).addScaledVector(right, -sin);
+    const [u0, v0, u1, v1] = STICKERS[p.name].uv;
+    const corners: [number, number, number, number][] = [
+      [-1, -1, u0, v0],
+      [1, -1, u1, v0],
+      [1, 1, u1, v1],
+      [-1, 1, u0, v1],
+    ];
+    for (const [sx, sy, cu, cv] of corners) {
+      corner
+        .copy(p.pos)
+        .sub(origin)
+        .addScaledVector(r, (sx * w) / 2)
+        .addScaledVector(u, (sy * h) / 2)
+        .addScaledVector(p.normal, LIFT);
+      position.push(corner.x, corner.y, corner.z);
+      normal.push(p.normal.x, p.normal.y, p.normal.z);
+      uv.push(cu, cv);
+    }
+    // Index order is paint order: later stickers overlap earlier ones.
+    const b = i * 4;
+    index.push(b, b + 1, b + 2, b, b + 2, b + 3);
+  });
+  const geometry = new BufferGeometry();
+  geometry.setAttribute("position", new Float32BufferAttribute(position, 3));
+  geometry.setAttribute("normal", new Float32BufferAttribute(normal, 3));
+  geometry.setAttribute("uv", new Float32BufferAttribute(uv, 2));
+  geometry.setIndex(index);
+  geometry.computeBoundingSphere();
+  return { geometry, origin };
+}
+
+function configure(t: Texture | Texture[]) {
+  for (const tex of Array.isArray(t) ? t : [t]) {
+    tex.colorSpace = SRGBColorSpace;
+    tex.anisotropy = 8;
+  }
+}
+
+function Sheet({ layout, map, tint = "#ffffff" }: { layout: () => Placement[]; map: Texture; tint?: string }) {
+  const { geometry, origin } = useMemo(() => build(layout()), [layout]);
+  return (
+    <mesh geometry={geometry} position={origin} receiveShadow>
+      {/* Printed vinyl: blended edges, no depth write (paint order handles
+          overlaps), pulled toward the camera so it never fights the surface. */}
+      <meshStandardMaterial
+        map={map}
+        color={tint}
+        transparent
+        depthWrite={false}
+        roughness={0.55}
+        metalness={0}
+        envMapIntensity={0.5}
+        polygonOffset
+        polygonOffsetFactor={-2}
+        polygonOffsetUnits={-4}
+      />
+    </mesh>
+  );
+}
+
+export function Stickers() {
+  const map = useTexture(STICKER_ATLAS, configure);
+  return (
+    <group>
+      {/* The counter sits under a hard downlight: full-white vinyl clips and blooms there */}
+      <Sheet layout={counterTop} map={map} tint="#9c9c99" />
+      <Sheet layout={imacBack} map={map} />
+      <Sheet layout={plinths} map={map} />
+      <Sheet layout={bench} map={map} />
+    </group>
+  );
+}
+
+useTexture.preload(STICKER_ATLAS);
