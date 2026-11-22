@@ -9,6 +9,7 @@ import { Deck } from "@/scenes/store/DeckArt";
 import { PlantBigHQ, PlantTallHQ } from "@/scenes/store/models";
 import { useScroll } from "@/stores/scroll";
 import { useQuality } from "@/canvas/quality";
+import { OpenSign } from "@/scenes/store/OpenSign";
 
 /**
  * Storefront street dressing, after storyboard frames 01–02:
@@ -94,6 +95,8 @@ function DoorLeaf({ side, decal }: { side: -1 | 1; decal?: boolean }) {
           ))}
         </group>
       ))}
+      {/* The leaf without the mark carries the OPEN / CLOSED sign, on the street face */}
+      {!decal && <OpenSign position={[cx, 1.62, 0.003]} />}
       {/* Framed mark on the glass (storyboard 02) */}
       {decal && (
         <group position={[cx, 1.6, 0.004]}>
