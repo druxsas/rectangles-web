@@ -39,9 +39,11 @@ export const KEYFRAMES: Keyframe[] = [
     id: "games",
     title: "Games",
     body: "Night Shift on both cabinets. One more game.",
-    position: [-2.9, 1.7, 2.9],
-    lookAt: [-6, 1.85, 2.7],
-    fov: 56,
+    // Square-on to the two cabinets (they stand at z 1.7 and 2.55, facing
+    // +x), a touch left of their centre so they sit clear of the caption.
+    position: [-2.75, 1.5, 2.4],
+    lookAt: [-6, 1.22, 2.4],
+    fov: 54,
   },
   {
     id: "skate",

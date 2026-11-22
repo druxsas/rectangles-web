@@ -33,7 +33,10 @@ type Spot = {
 const DOOR: Spot = { stop: "entrance", label: "Enter the store", title: "Enter", at: [0, 1.45, 5.05] };
 
 const SPOTS: Spot[] = [
-  { stop: "games", label: "Games", at: [-5.45, 1.45, 2.1] },
+  // Above the gap between the two cabinets, clear of their artwork. Set as
+  // deep as the cabinets' tops (they lean back), so it stays over the gap
+  // from any angle instead of drifting onto one cabinet.
+  { stop: "games", label: "Games", at: [-5.84, 1.9, 2.125] },
   { stop: "skate", label: "Skate wall", at: [-5.75, 2.6, -2.0] },
   { stop: "music", label: "Play the shop playlist", action: "Click to play", at: [5.6, 1.0, -1.0] },
   { stop: "shop", label: "Open the store", at: [IMAC.position[0], IMAC.position[1] + SCREEN.offset[1] + 0.02, IMAC.position[2]] },
