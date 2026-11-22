@@ -6,8 +6,12 @@ import { Euler, Matrix4, Quaternion, Vector3 } from "three";
  * the display) and CameraRig.tsx (the zoom onto the screen).
  */
 
+/** Counter-top height, and the desk mat the iMac stands on (see DeskMat.tsx). */
+export const COUNTER_TOP = 1.0;
+export const DESK_MAT_THICKNESS = 0.003;
+
 export const IMAC = {
-  position: [-1.15, 1.0, -3.7] as [number, number, number],
+  position: [-1.15, COUNTER_TOP + DESK_MAT_THICKNESS, -3.7] as [number, number, number],
   /** Faces the vendor side of the counter (storyboard 08). */
   yaw: Math.PI - 0.3,
 };

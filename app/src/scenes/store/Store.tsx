@@ -7,6 +7,7 @@ import { ImacScreen } from "@/scenes/store/ImacStore";
 import { IMAC } from "@/scenes/store/imacPose";
 import { useTvTexture } from "@/scenes/store/TvScreen";
 import { Exterior } from "@/scenes/store/Exterior";
+import { DeskMat } from "@/scenes/store/DeskMat";
 import { LogoPlane } from "@/scenes/store/LogoPlane";
 import { Stickers } from "@/scenes/store/Stickers";
 import { RecordCrate } from "@/scenes/store/RecordCrate";
@@ -302,6 +303,14 @@ function BackWallHero() {
 
       {/* William, the vendor, behind the counter */}
       <WilliamHQ position={[0.6, 0, -4.35]} rotation={[0, -0.15, 0]} />
+
+      {/* Desk mat under the iMac, keyboard and mouse (square to the iMac) */}
+      <group position={[IMAC.position[0], counterH, IMAC.position[2]]} rotation={[0, IMAC.yaw, 0]}>
+        {/* Pulled toward the vendor: 5 cm of mat in front of the keyboard, the stand's foot still on it */}
+        <group position={[0, 0, 0.025]}>
+          <DeskMat />
+        </group>
+      </group>
 
       {/* iMac on the counter, facing the vendor side (storyboard 08) — click to zoom into the store */}
       <group

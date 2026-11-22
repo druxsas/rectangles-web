@@ -71,6 +71,19 @@ function casualAngle(rng: () => number) {
   return base + (rng() + rng() + rng() - 1.5) * 0.65;
 }
 
+/**
+ * Counter variant: same crookedness, but the straight-ish ones mostly read
+ * the right way up for whoever stands behind the counter (the visitor at
+ * the Shop stop), then for the customer side, with a few sideways.
+ * (Draws the same number of random values as `casualAngle`.)
+ */
+function counterAngle(rng: () => number) {
+  const r = rng();
+  if (r < 0.32) return rng() * Math.PI * 2;
+  const base = r < 0.68 ? Math.PI : r < 0.9 ? 0 : r < 0.95 ? Math.PI / 2 : -Math.PI / 2;
+  return base + (rng() + rng() + rng() - 1.5) * 0.65;
+}
+
 function extent(name: StickerName, size: number) {
   const a = Math.sqrt(STICKERS[name].aspect);
   return { w: size * a, h: size / a };
@@ -183,7 +196,7 @@ function counterTop(): Placement[] {
       const { w, h } = extent(name, size);
       const radius = Math.hypot(w, h) / 2;
       if (Math.abs(u) > W / 2 - radius * 0.9 || Math.abs(v) > D / 2 - radius * 0.9) continue;
-      const angle = casualAngle(rng);
+      const angle = counterAngle(rng);
       const mine = discs(u, v, w, h, angle);
       // Mostly clear of the neighbours; now and then a corner lands on one.
       const slack = rng() < 0.14 ? 0.62 : 0.94;
@@ -352,12 +365,26 @@ function configure(t: Texture | Texture[]) {
   }
 }
 
-function Sheet({ layout, map, tint = "#ffffff" }: { layout: () => Placement[]; map: Texture; tint?: string }) {
+function Sheet({
+  layout,
+  map,
+  tint = "#ffffff",
+  depthBias = true,
+}: {
+  layout: () => Placement[];
+  map: Texture;
+  tint?: string;
+  /**
+   * Pull the stickers toward the camera so they never fight a curved or
+   * imprecise surface. Off for the counter: at grazing angles the bias grows
+   * enough to draw stickers over things lying on them (the desk mat).
+   */
+  depthBias?: boolean;
+}) {
   const { geometry, origin } = useMemo(() => build(layout()), [layout]);
   return (
     <mesh geometry={geometry} position={origin} receiveShadow>
-      {/* Printed vinyl: blended edges, no depth write (paint order handles
-          overlaps), pulled toward the camera so it never fights the surface. */}
+      {/* Printed vinyl: blended edges, no depth write (paint order handles overlaps). */}
       <meshStandardMaterial
         map={map}
         color={tint}
@@ -366,7 +393,7 @@ function Sheet({ layout, map, tint = "#ffffff" }: { layout: () => Placement[]; m
         roughness={0.55}
         metalness={0}
         envMapIntensity={0.5}
-        polygonOffset
+        polygonOffset={depthBias}
         polygonOffsetFactor={-2}
         polygonOffsetUnits={-4}
       />
@@ -379,7 +406,7 @@ export function Stickers() {
   return (
     <group>
       {/* The counter sits under a hard downlight: full-white vinyl clips and blooms there */}
-      <Sheet layout={counterTop} map={map} tint="#9c9c99" />
+      <Sheet layout={counterTop} map={map} tint="#9c9c99" depthBias={false} />
       <Sheet layout={imacBack} map={map} />
       <Sheet layout={plinths} map={map} />
       <Sheet layout={bench} map={map} />
