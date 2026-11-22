@@ -27,7 +27,29 @@ type Placement = {
   angle: number;
   /** Side of the square with the sticker's area, metres. */
   size: number;
+  /** Set for stickers wrapped round a pot (see `potStickers`). */
+  wrap?: Wrap;
 };
+
+/**
+ * A sticker bent round a truncated cone (a plant pot): `m` places the pot's
+ * model in the world; in that model's space the pot's axis stands at
+ * (cx, cz), with radius r0 at height y0 and r1 at y1; the sticker is centred
+ * at height `y`, facing direction `theta` (radians about the axis).
+ */
+type Wrap = { m: Matrix4; cx: number; cz: number; y0: number; r0: number; y1: number; r1: number; y: number; theta: number };
+
+/** Point and outward normal on a pot, `a` metres round it and `b` metres up from the sticker's centre. */
+function onPot(w: Wrap, a: number, b: number, lift: number, point: Vector3, normal: Vector3) {
+  const k = (w.r1 - w.r0) / (w.y1 - w.y0);
+  const radius = (y: number) => w.r0 + k * (y - w.y0);
+  const y = w.y + b / Math.sqrt(1 + k * k);
+  // Seen from outside, increasing angle runs to the viewer's left.
+  const ang = w.theta - a / radius(w.y);
+  const r = radius(y) + lift;
+  point.set(w.cx + Math.cos(ang) * r, y, w.cz + Math.sin(ang) * r).applyMatrix4(w.m);
+  normal.set(Math.cos(ang), -k, Math.sin(ang)).normalize().transformDirection(w.m);
+}
 
 /** Stickers sit this far off the surface (they don't write depth, see material). */
 const LIFT = 0.0006;
@@ -285,6 +307,59 @@ function plinths(): Placement[] {
 }
 
 // ----------------------------------------------------------------
+// Plant pots — a few stickers wrapped round the black ceramic
+// ----------------------------------------------------------------
+type Pot = Omit<Wrap, "m" | "y" | "theta">;
+// Pots in each model's normalized space (models.tsx). The low bowl of the
+// arrangement is left bare: it bulges, a flat-printed sticker wouldn't sit.
+const ARRANGEMENT_POTS: Pot[] = [
+  { cx: 0.337, cz: 0.618, y0: 0.421, r0: 0.183, y1: 0.897, r1: 0.152 },
+  { cx: -0.321, cz: 0.361, y0: 0, r0: 0.183, y1: 0.283, r1: 0.142 },
+  { cx: -0.381, cz: -0.546, y0: 0, r0: 0.236, y1: 0.607, r1: 0.191 },
+];
+const TALL_POT: Pot = { cx: 0.043, cz: 0.009, y0: 0, r0: 0.264, y1: 0.678, r1: 0.214 };
+const BIG_POT: Pot = { cx: 0.053, cz: 0.012, y0: 0, r0: 0.327, y1: 0.841, r1: 0.265 };
+
+function potStickers(): Placement[] {
+  const rng = mulberry32(404);
+  const deal = dealer(rng);
+  const out: Placement[] = [];
+  const point = new Vector3();
+  const normal = new Vector3();
+  /** `toward`: world point the stickers should roughly face (where people look from). */
+  const add = (pots: Pot[], position: [number, number, number], yaw: number, toward: Vector3, count: (pot: Pot) => number) => {
+    const m = new Matrix4().compose(new Vector3(...position), new Quaternion().setFromEuler(new Euler(0, yaw, 0)), new Vector3(1, 1, 1));
+    for (const pot of pots) {
+      const h = pot.y1 - pot.y0;
+      let made = 0;
+      for (let tries = 0; made < count(pot) && tries < 80; tries++) {
+        const wrap: Wrap = { ...pot, m, y: pot.y0 + h * (0.3 + rng() * 0.42), theta: rng() * Math.PI * 2 };
+        onPot(wrap, 0, 0, 0, point, normal);
+        const facing = toward.clone().sub(point).setY(0).normalize();
+        if (normal.dot(facing) < 0.3) continue;
+        // Keep clear of the ones already on this pot.
+        if (out.some((o) => o.wrap?.cx === pot.cx && o.wrap.m === m && o.pos.distanceTo(point) < 0.13)) continue;
+        // Small enough to stay on the pot, top and bottom.
+        const size = Math.min(0.078 + rng() * 0.04, h * 0.34);
+        out.push({ name: deal(), pos: point.clone(), normal: normal.clone(), up: Y, angle: (rng() + rng() + rng() - 1.5) * 0.7, size, wrap });
+        made++;
+      }
+    }
+  };
+  const room = new Vector3(0, 0, 0);
+  // Arrangements inside (Store.tsx Furnishings).
+  add(ARRANGEMENT_POTS, [-5.05, 0, -4.05], 0.6, room, (pot) => (pot.y1 - pot.y0 > 0.4 ? 2 : 1));
+  add(ARRANGEMENT_POTS, [4.95, 0, 3.95], -2.4, room, (pot) => (pot.y1 - pot.y0 > 0.4 ? 2 : 1));
+  // Single plants on the sidewalk (Exterior.tsx), seen from the street.
+  const street = (x: number) => new Vector3(x * 0.6, 0, 12);
+  add([TALL_POT], [-8.2, 0, 5.45], 0.6, street(-8.2), () => 2);
+  add([TALL_POT], [8.2, 0, 5.45], -0.8, street(8.2), () => 2);
+  add([BIG_POT], [-1.42, 0, 5.48], 0.3, street(-1.42), () => 3);
+  add([BIG_POT], [1.42, 0, 5.48], -1.9, street(1.42), () => 3);
+  return out;
+}
+
+// ----------------------------------------------------------------
 // Arcade cabinets — the perforated steel fronts
 // ----------------------------------------------------------------
 function arcades(): Placement[] {
@@ -342,8 +417,34 @@ function build(placements: Placement[]) {
   const r = new Vector3();
   const u = new Vector3();
   const corner = new Vector3();
-  placements.forEach((p, i) => {
+  placements.forEach((p) => {
     const { w, h } = extent(p.name, p.size);
+    if (p.wrap) {
+      // Bent round the pot: an N × N grid of quads following the cone.
+      const N = 6;
+      const cos = Math.cos(p.angle);
+      const sin = Math.sin(p.angle);
+      const [u0, v0, u1, v1] = STICKERS[p.name].uv;
+      const base = position.length / 3;
+      for (let j = 0; j <= N; j++) {
+        for (let i = 0; i <= N; i++) {
+          const sx = (i / N - 0.5) * w;
+          const sy = (j / N - 0.5) * h;
+          onPot(p.wrap, sx * cos - sy * sin, sx * sin + sy * cos, LIFT * 2, corner, r);
+          corner.sub(origin);
+          position.push(corner.x, corner.y, corner.z);
+          normal.push(r.x, r.y, r.z);
+          uv.push(u0 + (i / N) * (u1 - u0), v0 + (j / N) * (v1 - v0));
+        }
+      }
+      for (let j = 0; j < N; j++) {
+        for (let i = 0; i < N; i++) {
+          const a = base + j * (N + 1) + i;
+          index.push(a, a + 1, a + N + 2, a, a + N + 2, a + N + 1);
+        }
+      }
+      return;
+    }
     right.crossVectors(p.up, p.normal).normalize();
     const cos = Math.cos(p.angle);
     const sin = Math.sin(p.angle);
@@ -368,7 +469,7 @@ function build(placements: Placement[]) {
       uv.push(cu, cv);
     }
     // Index order is paint order: later stickers overlap earlier ones.
-    const b = i * 4;
+    const b = position.length / 3 - 4;
     index.push(b, b + 1, b + 2, b, b + 2, b + 3);
   });
   const geometry = new BufferGeometry();
@@ -431,6 +532,7 @@ export function Stickers() {
       <Sheet layout={counterTop} map={map} tint="#9c9c99" depthBias={false} />
       <Sheet layout={imacBack} map={map} />
       <Sheet layout={plinths} map={map} />
+      <Sheet layout={potStickers} map={map} />
       <Sheet layout={arcades} map={map} />
       <Sheet layout={bench} map={map} />
     </group>
