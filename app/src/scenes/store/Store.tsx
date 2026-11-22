@@ -1,14 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
-import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from "three";
 import { useNightShiftTexture } from "@/scenes/store/NightShift";
 import { ImacScreen } from "@/scenes/store/ImacStore";
 import { IMAC } from "@/scenes/store/imacPose";
 import { useTvTexture } from "@/scenes/store/TvScreen";
 import { Exterior } from "@/scenes/store/Exterior";
+import { ArcadeArt, type ArcadeArtSet } from "@/scenes/store/ArcadeArt";
 import { DeskMat } from "@/scenes/store/DeskMat";
 import { LogoPlane } from "@/scenes/store/LogoPlane";
+import { perforatedTexture } from "@/scenes/store/perforated";
 import { Stickers } from "@/scenes/store/Stickers";
 import { RecordCrate } from "@/scenes/store/RecordCrate";
 import { useListening } from "@/stores/listening";
@@ -79,23 +80,7 @@ function PbrMat({ set, roughness = 0.8, color }: { set: PbrSet; roughness?: numb
 
 /** Dot-grid texture for the perforated steel counter front. */
 function usePerforatedTexture(repeat: [number, number]) {
-  return useMemo(() => {
-    const c = document.createElement("canvas");
-    c.width = c.height = 64;
-    const ctx = c.getContext("2d")!;
-    ctx.fillStyle = "#3a3d41";
-    ctx.fillRect(0, 0, 64, 64);
-    ctx.fillStyle = "#060607";
-    ctx.beginPath();
-    ctx.arc(32, 32, 11, 0, Math.PI * 2);
-    ctx.fill();
-    const t = new CanvasTexture(c);
-    t.wrapS = t.wrapT = RepeatWrapping;
-    t.repeat.set(...repeat);
-    t.colorSpace = SRGBColorSpace;
-    t.anisotropy = 8;
-    return t;
-  }, [repeat]);
+  return useMemo(() => perforatedTexture(repeat), [repeat]);
 }
 
 // ================================================================
@@ -469,14 +454,23 @@ function MusicZone() {
 // ================================================================
 // Games — two arcade cabinets running Night Shift (left wall, by the window)
 // ================================================================
+const CABINETS: [z: number, art: ArcadeArtSet][] = [
+  [2.55, "01"],
+  [1.7, "02"],
+];
+
 function GamesZone() {
   const nightShift = useNightShiftTexture();
   const screens = useMemo(() => ({ Street_Fighter_II: nightShift }), [nightShift]);
   const x = -HALF_W + 0.42;
   return (
     <group>
-      {[2.55, 1.7].map((z) => (
-        <ArcadeHQ key={z} position={[x, 0, z]} rotation={[0, Math.PI, 0]} textures={screens} />
+      {/* One artwork set per cabinet: 01 by the window, 02 further in */}
+      {CABINETS.map(([z, art]) => (
+        <group key={z} position={[x, 0, z]} rotation={[0, Math.PI, 0]}>
+          <ArcadeHQ textures={screens} />
+          <ArcadeArt set={art} />
+        </group>
       ))}
       <pointLight position={[x + 1.0, 1.35, 2.1]} color={COL.cobalt} intensity={1.8} distance={3} decay={1.6} />
     </group>

@@ -11,6 +11,7 @@ import {
   Euler,
   Group,
   Mesh,
+  MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   SRGBColorSpace,
@@ -209,12 +210,7 @@ const lacquerInk = new MeshPhysicalMaterial({
   clearcoat: 0.6,
   clearcoatRoughness: 0.25,
 });
-const lacquerCobalt = new MeshPhysicalMaterial({
-  color: "#165dfa",
-  roughness: 0.35,
-  clearcoat: 0.8,
-  clearcoatRoughness: 0.2,
-});
+const hidden = new MeshBasicMaterial({ visible: false });
 const satinBlack = new MeshStandardMaterial({ color: "#121315", roughness: 0.55, metalness: 0.1 });
 const brushedSteel = new MeshStandardMaterial({ color: "#b9bcc0", roughness: 0.3, metalness: 1 });
 const aluminium = new MeshStandardMaterial({ color: "#c7c9cc", roughness: 0.28, metalness: 0.9 });
@@ -292,7 +288,8 @@ export const ImacHQ = model("/models/opt/imac.glb", {
 
 /**
  * Upright arcade cabinet, front facing -X in source. No MTL shipped — the
- * cabinet is finished in black lacquer with a cobalt control deck, and the
+ * cabinet is finished in black lacquer (artwork, steel fascias and the
+ * controls are added by ArcadeArt.tsx), and the
  * "Street_Fighter_II" screen plane accepts a live texture via `textures`.
  */
 export const ArcadeHQ = model("/models/opt/arcade_hq.glb", {
@@ -300,7 +297,9 @@ export const ArcadeHQ = model("/models/opt/arcade_hq.glb", {
   materials: (name) => {
     if (name === "Caja") return lacquerInk;
     if (name === "Cristal") return glass;
-    if (name === "Joystick") return lacquerCobalt;
+    // The source joysticks and buttons are open shells with missing faces
+    // (they render see-through); ArcadeArt.tsx builds clean ones instead.
+    if (name === "Joystick") return hidden;
     if (name === "Monedero") return brushedSteel;
     if (name === "Street_Fighter_II") return satinBlack;
     return undefined;
