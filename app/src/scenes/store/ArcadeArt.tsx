@@ -2,7 +2,7 @@
 
 import { useTexture } from "@react-three/drei";
 import { useMemo } from "react";
-import { Matrix4, Quaternion, SRGBColorSpace, Vector3, type Texture } from "three";
+import { Matrix4, MeshPhysicalMaterial, MeshStandardMaterial, Quaternion, SRGBColorSpace, Vector3, type Texture } from "three";
 import { PERF_PER_METRE, perforatedTexture } from "@/scenes/store/perforated";
 
 /**
@@ -89,47 +89,88 @@ function configure(t: Texture | Texture[]) {
 }
 
 /**
+ * Push-button colours by position: the far row is cobalt for both players;
+ * the start button and the near row are black for player 1 (left, z < 0)
+ * and ivory for player 2.
+ */
+type ButtonTone = "cobalt" | "ink" | "ivory";
+function buttonTone(x: number, z: number): ButtonTone {
+  const second = z > 0 ? "ivory" : "ink";
+  if (x > -0.2) return second; // start button, set apart at the back
+  return x > -0.24 ? "cobalt" : second;
+}
+
+/**
  * Joysticks and push buttons, built from primitives (solid, unlike the
- * source model's). Laid out in the deck's own frame: x across the cabinet,
- * y up the slope, z out of the deck.
+ * source model's) and proportioned like real arcade parts: a ball-top stick
+ * with a shaft cover and dust washer on a steel mounting ring, and
+ * convex-plunger buttons in a threaded-style rim — cobalt, black and ivory.
+ * Laid out in the deck's own frame: x across the cabinet, y up the slope,
+ * z out of the deck.
  */
 function Controls({ position, quaternion }: { position: Vector3; quaternion: Quaternion }) {
   const slope = new Vector3(...DECK.up).normalize();
   // Deck-frame coordinates of a point given by its cabinet-space x and z.
   const at = (x: number, z: number): [number, number] => [z, (x - DECK.center[0]) / slope.x];
   const upright: [number, number, number] = [Math.PI / 2, 0, 0];
+  const mat = useMemo(() => {
+    const gloss = (color: string) => new MeshPhysicalMaterial({ color, roughness: 0.28, clearcoat: 0.7, clearcoatRoughness: 0.18, envMapIntensity: 0.9 });
+    return {
+      cobalt: gloss(COBALT),
+      ink: gloss("#101113"),
+      // A touch under pure ivory: the deck sits under a ceiling spot.
+      ivory: gloss("#d9d6cd"),
+      rubber: new MeshStandardMaterial({ color: "#0b0c0d", roughness: 0.85 }),
+      steel: new MeshStandardMaterial({ color: "#a9adb2", roughness: 0.35, metalness: 0.9, envMapIntensity: 1.2 }),
+    };
+  }, []);
   return (
     <group position={position} quaternion={quaternion}>
-      {STICKS.map(([x, z]) => {
+      {STICKS.map(([x, z], player) => {
         const [u, v] = at(x, z);
         return (
           <group key={`s${z}`} position={[u, v, 0]}>
-            <mesh position={[0, 0, 0.002]} rotation={upright}>
-              <cylinderGeometry args={[0.024, 0.026, 0.004, 28]} />
-              <meshStandardMaterial color="#0d0e10" roughness={0.5} />
+            {/* Steel mounting ring */}
+            <mesh position={[0, 0, 0.0012]} rotation={upright} material={mat.steel}>
+              <cylinderGeometry args={[0.03, 0.031, 0.0024, 36]} />
             </mesh>
-            <mesh position={[0, 0, 0.036]} rotation={upright} castShadow>
-              <cylinderGeometry args={[0.0048, 0.0048, 0.068, 12]} />
-              <meshStandardMaterial color="#b9bcc0" roughness={0.3} metalness={1} />
+            {/* Dust washer */}
+            <mesh position={[0, 0, 0.0036]} rotation={upright} material={mat.rubber}>
+              <cylinderGeometry args={[0.024, 0.026, 0.0026, 36]} />
             </mesh>
-            <mesh position={[0, 0, 0.084]} castShadow>
-              <sphereGeometry args={[0.0195, 28, 20]} />
-              <meshStandardMaterial color={COBALT} roughness={0.32} />
+            {/* Shaft cover, flaring toward the deck */}
+            <mesh position={[0, 0, 0.021]} rotation={upright} material={mat.ink} castShadow>
+              <cylinderGeometry args={[0.0095, 0.0145, 0.034, 24]} />
+            </mesh>
+            {/* Shaft */}
+            <mesh position={[0, 0, 0.046]} rotation={upright} material={mat.steel} castShadow>
+              <cylinderGeometry args={[0.0068, 0.0068, 0.03, 16]} />
+            </mesh>
+            {/* Ball top: player 1 cobalt, player 2 ivory */}
+            <mesh position={[0, 0, 0.074]} material={player === 0 ? mat.cobalt : mat.ivory} castShadow>
+              <sphereGeometry args={[0.0225, 32, 24]} />
             </mesh>
           </group>
         );
       })}
       {BUTTONS.map(([x, z]) => {
         const [u, v] = at(x, z);
+        const tone = buttonTone(x, z);
         return (
           <group key={`b${x}:${z}`} position={[u, v, 0]}>
-            <mesh position={[0, 0, 0.0025]} rotation={upright}>
-              <cylinderGeometry args={[0.0185, 0.0195, 0.005, 28]} />
-              <meshStandardMaterial color="#0d0e10" roughness={0.5} />
+            {/* Rim: a low collar with a rounded lip */}
+            <mesh position={[0, 0, 0.002]} rotation={upright} material={mat.ink}>
+              <cylinderGeometry args={[0.0188, 0.02, 0.004, 32]} />
             </mesh>
-            <mesh position={[0, 0, 0.007]} rotation={upright}>
-              <cylinderGeometry args={[0.0128, 0.0138, 0.008, 28]} />
-              <meshStandardMaterial color={COBALT} roughness={0.38} />
+            <mesh position={[0, 0, 0.004]} material={mat.ink}>
+              <torusGeometry args={[0.0162, 0.0028, 10, 32]} />
+            </mesh>
+            {/* Plunger: short barrel with a convex cap */}
+            <mesh position={[0, 0, 0.0055]} rotation={upright} material={mat[tone]}>
+              <cylinderGeometry args={[0.0132, 0.0132, 0.007, 32]} />
+            </mesh>
+            <mesh position={[0, 0, 0.009]} scale={[1, 1, 0.3]} material={mat[tone]}>
+              <sphereGeometry args={[0.0132, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2]} />
             </mesh>
           </group>
         );
