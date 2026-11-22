@@ -127,11 +127,17 @@ function scatter(
   patch: Patch,
   count: number,
   size: [number, number],
-  opts: { angle?: (name: StickerName) => number; avoid?: (u: number, v: number, radius: number) => boolean } = {},
+  opts: {
+    angle?: (name: StickerName) => number;
+    avoid?: (u: number, v: number, radius: number) => boolean;
+    /** Keep stickers this share of their combined radii apart (1 = just touching; unset = anywhere). */
+    apart?: number;
+  } = {},
 ): Placement[] {
   const right = new Vector3().crossVectors(patch.up, patch.normal).normalize();
   const out: Placement[] = [];
-  let guard = count * 30;
+  const taken: { u: number; v: number; radius: number }[] = [];
+  let guard = count * 60;
   while (out.length < count && guard-- > 0) {
     const name = deal();
     const s = size[0] + rng() * (size[1] - size[0]);
@@ -143,6 +149,9 @@ function scatter(
     const u = (rng() * 2 - 1) * spanU;
     const v = (rng() * 2 - 1) * spanV;
     if (opts.avoid?.(u, v, radius)) continue;
+    const apart = opts.apart;
+    if (apart && taken.some((t) => Math.hypot(t.u - u, t.v - v) < (t.radius + radius) * apart)) continue;
+    taken.push({ u, v, radius });
     out.push({
       name,
       pos: patch.center.clone().addScaledVector(right, u).addScaledVector(patch.up, v),
@@ -372,10 +381,11 @@ function arcades(): Placement[] {
     const rng = mulberry32(64 + i * 13);
     const deal = dealer(rng);
     out.push(
-      ...scatter(rng, deal, { center: new Vector3(-5.58 + 0.2218 + 0.0012, 0.401, z), normal: X, up: Y, width: 0.66, height: 0.74 }, 7, [0.075, 0.115], {
+      ...scatter(rng, deal, { center: new Vector3(-5.58 + 0.2218 + 0.0012, 0.401, z), normal: X, up: Y, width: 0.66, height: 0.74 }, 9, [0.07, 0.115], {
         avoid: (u, v, r) => Math.abs(u) < 0.134 + r * 0.8 && Math.abs(v) < 0.167 + r * 0.8,
+        apart: 0.72,
       }),
-      ...scatter(rng, deal, { center: new Vector3(-5.58 + 0.3286 + 0.0012, 0.911, z), normal: X, up: Y, width: 0.66, height: 0.168 }, 2, [0.06, 0.075]),
+      ...scatter(rng, deal, { center: new Vector3(-5.58 + 0.3286 + 0.0012, 0.911, z), normal: X, up: Y, width: 0.66, height: 0.168 }, 4, [0.058, 0.078], { apart: 0.75 }),
     );
   });
   return out;
