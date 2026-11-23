@@ -7,6 +7,7 @@ import { SiteNav } from "@/components/site-nav";
 import { HideWhenShopping } from "@/components/store/HideWhenShopping";
 import { ShoppingMode } from "@/components/store/ShoppingMode";
 import { ListeningPanel } from "@/components/music/ListeningPanel";
+import { ArcadePanel } from "@/components/games/ArcadePanel";
 
 /**
  * Home — immersive 3D walkthrough of the Rectangle's store.
@@ -24,6 +25,7 @@ export default function Home() {
       <CustomCursor />
       <ShoppingMode />
       <ListeningPanel />
+      <ArcadePanel />
       <LookArrows />
       <HideWhenShopping>
         <ScrollProgress />

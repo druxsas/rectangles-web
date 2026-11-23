@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useNightShiftTexture } from "@/scenes/store/NightShift";
+import { useGameScreen } from "@/games/useGameScreen";
 import { ImacScreen } from "@/scenes/store/ImacStore";
 import { IMAC } from "@/scenes/store/imacPose";
 import { useTvTexture } from "@/scenes/store/TvScreen";
@@ -30,6 +30,7 @@ import {
   WilliamHQ,
 } from "@/scenes/store/models";
 import { useShellTextures, type PbrSet } from "@/scenes/store/useShellTextures";
+import { CABINETS, useArcade, type CabinetId } from "@/stores/arcade";
 import { useCheckout } from "@/stores/checkout";
 import { useQuality } from "@/canvas/quality";
 
@@ -454,24 +455,48 @@ function MusicZone() {
 // ================================================================
 // Games — two arcade cabinets running Night Shift (left wall, by the window)
 // ================================================================
-const CABINETS: [z: number, art: ArcadeArtSet][] = [
-  [2.55, "01"],
-  [1.7, "02"],
-];
+/** Artwork set of each cabinet (stores/arcade.ts CABINETS): 01 by the window, 02 further in. */
+const CABINET_ART: ArcadeArtSet[] = ["01", "02"];
+
+/** Playing needs a keyboard or a controller: touch-first devices keep the walkthrough only. */
+const canPlay = () => typeof window !== "undefined" && !window.matchMedia("(pointer: coarse)").matches;
+
+/** One cabinet: the model, its artwork and controls, and its game on the screen. Click it to play. */
+function Cabinet({ index, x }: { index: CabinetId; x: number }) {
+  const openCabinet = useArcade((s) => s.open);
+  const screen = useGameScreen(index);
+  return (
+    <group
+      position={[x, 0, CABINETS[index].z]}
+      rotation={[0, Math.PI, 0]}
+      onClick={(e) => {
+        if (!canPlay()) return;
+        e.stopPropagation();
+        document.body.style.cursor = "";
+        openCabinet(index);
+      }}
+      onPointerOver={(e) => {
+        if (!canPlay()) return;
+        e.stopPropagation();
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={() => {
+        document.body.style.cursor = "";
+      }}
+    >
+      <ArcadeHQ />
+      <ArcadeArt set={CABINET_ART[index]} cabinet={index} screen={screen} />
+    </group>
+  );
+}
 
 function GamesZone() {
-  const nightShift = useNightShiftTexture();
-  const screens = useMemo(() => ({ Street_Fighter_II: nightShift }), [nightShift]);
   const x = -HALF_W + 0.42;
   return (
     <group>
-      {/* One artwork set per cabinet: 01 by the window, 02 further in */}
-      {CABINETS.map(([z, art]) => (
-        <group key={z} position={[x, 0, z]} rotation={[0, Math.PI, 0]}>
-          <ArcadeHQ textures={screens} />
-          <ArcadeArt set={art} />
-        </group>
-      ))}
+      {/* Two cabinets, each running its own game (desktop: playing needs a keyboard or a controller) */}
+      <Cabinet index={0} x={x} />
+      <Cabinet index={1} x={x} />
       <pointLight position={[x + 1.0, 1.35, 2.1]} color={COL.cobalt} intensity={1.8} distance={3} decay={1.6} />
     </group>
   );

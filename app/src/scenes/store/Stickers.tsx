@@ -373,19 +373,24 @@ function potStickers(): Placement[] {
 // ----------------------------------------------------------------
 function arcades(): Placement[] {
   const out: Placement[] = [];
+  // On a vertical front people read them: the right way up, just crooked (±~20°).
+  let tilt = mulberry32(5);
+  const upright = () => (tilt() + tilt() + tilt() - 1.5) * 0.46;
   // Cabinets stand at x = -5.58 facing +x (Store.tsx GamesZone). In cabinet
   // space the lower front is 0.69 × 0.77 m, 0.222 m ahead of centre, with
   // the coin door in the middle; the strip under the controls is 0.17 m
   // tall, 0.329 m ahead (ArcadeArt.tsx).
   [2.55, 1.7].forEach((z, i) => {
     const rng = mulberry32(64 + i * 13);
+    tilt = mulberry32(90 + i);
     const deal = dealer(rng);
     out.push(
       ...scatter(rng, deal, { center: new Vector3(-5.58 + 0.2218 + 0.0012, 0.401, z), normal: X, up: Y, width: 0.66, height: 0.74 }, 9, [0.07, 0.115], {
         avoid: (u, v, r) => Math.abs(u) < 0.134 + r * 0.8 && Math.abs(v) < 0.167 + r * 0.8,
         apart: 0.72,
+        angle: upright,
       }),
-      ...scatter(rng, deal, { center: new Vector3(-5.58 + 0.3286 + 0.0012, 0.911, z), normal: X, up: Y, width: 0.66, height: 0.168 }, 4, [0.058, 0.078], { apart: 0.75 }),
+      ...scatter(rng, deal, { center: new Vector3(-5.58 + 0.3286 + 0.0012, 0.911, z), normal: X, up: Y, width: 0.66, height: 0.168 }, 4, [0.058, 0.078], { apart: 0.75, angle: upright }),
     );
   });
   return out;

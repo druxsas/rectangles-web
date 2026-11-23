@@ -6,6 +6,7 @@ import { isInside, pointer } from "@/canvas/lookAround";
 import { scrollToSection } from "@/components/smooth-scroll";
 import { IMAC, SCREEN } from "@/scenes/store/imacPose";
 import { KEYFRAMES } from "@/scenes/store/keyframes";
+import { useArcade, type CabinetId } from "@/stores/arcade";
 import { useCheckout } from "@/stores/checkout";
 import { useListening } from "@/stores/listening";
 import { useScroll } from "@/stores/scroll";
@@ -27,6 +28,8 @@ type Spot = {
   title?: string;
   /** Shown (always, not just on hover) when the ring is an action at its own stop. */
   action?: string;
+  /** Arcade cabinet this ring starts (Games stop only). */
+  cabinet?: CabinetId;
 };
 
 /** Shown only from the street: the door, leading inside. */
@@ -37,6 +40,10 @@ const SPOTS: Spot[] = [
   // deep as the cabinets' tops (they lean back), so it stays over the gap
   // from any angle instead of drifting onto one cabinet.
   { stop: "games", label: "Games", at: [-5.84, 1.9, 2.125] },
+  // At the Games stop: one ring per cabinet, above its top (clear of the
+  // screen and the artwork) — pick one to play.
+  { stop: "games", label: "Play at cabinet 01", action: "Play", cabinet: 0, at: [-5.84, 1.91, 2.55] },
+  { stop: "games", label: "Play at cabinet 02", action: "Play", cabinet: 1, at: [-5.84, 1.91, 1.7] },
   { stop: "skate", label: "Skate wall", at: [-5.75, 2.6, -2.0] },
   { stop: "music", label: "Play the shop playlist", action: "Click to play", at: [5.6, 1.0, -1.0] },
   { stop: "shop", label: "Open the store", at: [IMAC.position[0], IMAC.position[1] + SCREEN.offset[1] + 0.02, IMAC.position[2]] },
@@ -88,15 +95,17 @@ export function Hotspots() {
   const purchased = useCheckout((s) => s.purchased);
   const listening = useListening((s) => s.isOpen);
   const openPlaylist = useListening((s) => s.open);
+  const playing = useArcade((s) => s.cabinet !== null);
+  const openCabinet = useArcade((s) => s.open);
   const musicIndex = KEYFRAMES.findIndex((k) => k.id === "music");
 
   // A ring can vanish under the cursor (new stop, store opened) without a
   // pointerleave — release the frozen view whenever that can happen.
   useEffect(() => {
     pointer.hold = false;
-  }, [section, shopping, inside, listening]);
+  }, [section, shopping, inside, listening, playing]);
 
-  if (shopping || listening) return null;
+  if (shopping || listening || playing) return null;
 
   // Touch devices keep the scroll-only walkthrough, with one exception: at
   // the music stop a chip on the turntable says it can be tapped.
@@ -126,11 +135,13 @@ export function Hotspots() {
         // At the current stop only the action rings stay: the iMac (opens
         // the store) and the turntable (opens the playlist).
         if (here && spot.stop !== "shop" && !spot.action) return null;
+        // The cabinet rings only exist at the Games stop.
+        if (spot.cabinet !== undefined && !here) return null;
         const acting = here && !!spot.action;
         // The bag handoff only exists after the demo checkout.
         if (spot.stop === "handoff" && !purchased) return null;
         return (
-          <Html key={spot.stop} position={spot.at} center zIndexRange={[15, 0]}>
+          <Html key={`${spot.stop}:${spot.cabinet ?? ""}`} position={spot.at} center zIndexRange={[15, 0]}>
             <div
               className={acting ? "hotspot-wrap hotspot-action" : "hotspot-wrap"}
               onPointerEnter={() => (pointer.hold = true)}
@@ -155,7 +166,8 @@ export function Hotspots() {
               title={here ? spot.label : KEYFRAMES[index].title}
               onClick={() => {
                 pointer.hold = false;
-                if (acting) openPlaylist();
+                if (acting && spot.cabinet !== undefined) openCabinet(spot.cabinet);
+                else if (acting) openPlaylist();
                 else if (here) open();
                 else scrollToSection(index);
               }}

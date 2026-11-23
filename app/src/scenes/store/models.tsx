@@ -118,15 +118,9 @@ function normalize(
       const name = m.name;
       const tex = textures?.[name];
       if (tex) {
-        return new MeshStandardMaterial({
-          map: tex,
-          emissive: new Color("#ffffff"),
-          emissiveMap: tex,
-          emissiveIntensity: screenIntensity,
-          roughness: 0.25,
-          toneMapped: false,
-          name,
-        });
+        // A screen makes its own light: unlit, so room lights neither wash
+        // it out nor leave a specular glare on the picture.
+        return new MeshBasicMaterial({ map: tex, color: new Color("#ffffff").multiplyScalar(screenIntensity), toneMapped: false, name });
       }
       const base = spec.materials?.(name, m as MeshStandardMaterial) ?? m;
       // A single transmissive material (e.g. a 3 mm indicator lens) makes
@@ -214,15 +208,9 @@ const hidden = new MeshBasicMaterial({ visible: false });
 const satinBlack = new MeshStandardMaterial({ color: "#121315", roughness: 0.55, metalness: 0.1 });
 const brushedSteel = new MeshStandardMaterial({ color: "#b9bcc0", roughness: 0.3, metalness: 1 });
 const aluminium = new MeshStandardMaterial({ color: "#c7c9cc", roughness: 0.28, metalness: 0.9 });
-const glass = new MeshPhysicalMaterial({
-  color: "#0b0d12",
-  roughness: 0.05,
-  metalness: 0,
-  transmission: 0,
-  transparent: true,
-  opacity: 0.35,
-  clearcoat: 1,
-});
+// Arcade screen glass: almost clear and matte, so the ceiling spot doesn't
+// burn a glare over the game being played.
+const screenGlass = new MeshStandardMaterial({ color: "#0b0d12", roughness: 0.6, metalness: 0, transparent: true, opacity: 0.1, envMapIntensity: 0.15 });
 const kraft = new MeshStandardMaterial({ color: "#b58a5c", roughness: 0.92 });
 const kraftInside = new MeshStandardMaterial({ color: "#9c7449", roughness: 0.95 });
 const goldFoil = new MeshStandardMaterial({ color: "#c9a24a", roughness: 0.35, metalness: 1 });
@@ -296,7 +284,7 @@ export const ArcadeHQ = model("/models/opt/arcade_hq.glb", {
   fit: { height: 1.82 },
   materials: (name) => {
     if (name === "Caja") return lacquerInk;
-    if (name === "Cristal") return glass;
+    if (name === "Cristal") return screenGlass;
     // The source joysticks and buttons are open shells with missing faces
     // (they render see-through); ArcadeArt.tsx builds clean ones instead.
     if (name === "Joystick") return hidden;
