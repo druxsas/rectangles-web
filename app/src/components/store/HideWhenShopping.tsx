@@ -2,13 +2,15 @@
 
 import type { ReactNode } from "react";
 import { useCheckout } from "@/stores/checkout";
+import { useArcade } from "@/stores/arcade";
 import { useListening } from "@/stores/listening";
 
-/** Fades walkthrough chrome out while the visitor is shopping on the iMac or listening at the turntable. */
+/** Fades walkthrough chrome out while the visitor is shopping on the iMac, listening at the turntable or playing at a cabinet. */
 export function HideWhenShopping({ children, className }: { children: ReactNode; className?: string }) {
   const shopping = useCheckout((s) => s.isOpen);
   const listening = useListening((s) => s.isOpen);
-  const isOpen = shopping || listening;
+  const playing = useArcade((s) => s.cabinet !== null);
+  const isOpen = shopping || listening || playing;
   return (
     <div
       className={className}

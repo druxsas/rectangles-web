@@ -38,7 +38,7 @@ export const KEYFRAMES: Keyframe[] = [
   {
     id: "games",
     title: "Games",
-    body: "Night Shift on both cabinets. One more game.",
+    body: "Rooftop Rumble and Night Drive. Pick a cabinet and play.",
     // Square-on to the two cabinets (they stand at z 1.7 and 2.55, facing
     // +x), a touch left of their centre so they sit clear of the caption.
     position: [-2.75, 1.5, 2.4],

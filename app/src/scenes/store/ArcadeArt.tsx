@@ -1,8 +1,12 @@
 "use client";
 
 import { useTexture } from "@react-three/drei";
-import { useMemo } from "react";
-import { Matrix4, MeshPhysicalMaterial, MeshStandardMaterial, Quaternion, SRGBColorSpace, Vector3, type Texture } from "three";
+import { useFrame } from "@react-three/fiber";
+import { useMemo, useRef } from "react";
+import { CanvasTexture, MathUtils, Matrix4, MeshPhysicalMaterial, MeshStandardMaterial, Quaternion, SRGBColorSpace, Vector3, type Group, type Texture } from "three";
+import { controlLabels, live } from "@/components/games/arcadeInput";
+import { displayFont } from "@/scenes/store/brandCanvas";
+import { useArcade, type CabinetId } from "@/stores/arcade";
 import { PERF_PER_METRE, perforatedTexture } from "@/scenes/store/perforated";
 
 /**
@@ -89,7 +93,76 @@ function configure(t: Texture | Texture[]) {
 }
 
 /**
- * Push-button colours by position: the far row is cobalt for both players;
+ * What each deck button is: which player's, and which of their controls.
+ * Per player the far row is buttons 0–2 and the near row 3–5, left to right
+ * as the player sees them (+z is their right); the one set apart is Start.
+ */
+const BUTTON_ROLE = BUTTONS.map(([x, z]) => {
+  const player = (z < 0 ? 0 : 1) as 0 | 1;
+  if (x > -0.2) return { player, start: true, index: -1 };
+  const far = x > -0.24;
+  const row = BUTTONS.filter(([bx, bz]) => bz < 0 === z < 0 && bx <= -0.2 && bx > -0.24 === far)
+    .map(([, bz]) => bz)
+    .sort((p, q) => p - q);
+  return { player, start: false, index: (far ? 0 : 3) + row.indexOf(z) };
+});
+
+/** How far a stick leans and a plunger sinks. */
+const STICK_TILT = 0.36;
+const PRESS = 0.0032;
+
+const labelCache = new Map<string, CanvasTexture>();
+/** A key / button name printed on a plunger cap (canvas, so PlayStation's shapes can be drawn). */
+function capLabel(text: string, ink: string) {
+  const key = `${text}|${ink}`;
+  let tex = labelCache.get(key);
+  if (tex) return tex;
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const ctx = c.getContext("2d")!;
+  ctx.strokeStyle = ctx.fillStyle = ink;
+  ctx.lineWidth = 11;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  if (text === "□") ctx.strokeRect(38, 38, 52, 52);
+  else if (text === "○") {
+    ctx.beginPath();
+    ctx.arc(64, 64, 30, 0, Math.PI * 2);
+    ctx.stroke();
+  } else if (text === "△") {
+    ctx.beginPath();
+    ctx.moveTo(64, 32);
+    ctx.lineTo(96, 90);
+    ctx.lineTo(32, 90);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (text === "✕") {
+    ctx.beginPath();
+    ctx.moveTo(38, 38);
+    ctx.lineTo(90, 90);
+    ctx.moveTo(90, 38);
+    ctx.lineTo(38, 90);
+    ctx.stroke();
+  } else {
+    const label = text.length > 3 ? text.slice(0, 3).toUpperCase() : text.toUpperCase();
+    let size = 78;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    do {
+      ctx.font = `400 ${size}px ${displayFont()}`;
+      size -= 4;
+    } while (ctx.measureText(label).width > 92 && size > 20);
+    const m = ctx.measureText(label);
+    ctx.fillText(label, 64, 64 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
+  }
+  tex = new CanvasTexture(c);
+  tex.colorSpace = SRGBColorSpace;
+  tex.anisotropy = 8;
+  labelCache.set(key, tex);
+  return tex;
+}
+
+/** Push-button colours by position: the far row is cobalt for both players;
  * the start button and the near row are black for player 1 (left, z < 0)
  * and ivory for player 2.
  */
@@ -107,8 +180,12 @@ function buttonTone(x: number, z: number): ButtonTone {
  * convex-plunger buttons in a threaded-style rim — cobalt, black and ivory.
  * Laid out in the deck's own frame: x across the cabinet, y up the slope,
  * z out of the deck.
+ *
+ * While this cabinet is being played (stores/arcade.ts) the sticks lean and
+ * the plungers sink with the players' input, and each plunger shows the key
+ * or controller button that works it.
  */
-function Controls({ position, quaternion }: { position: Vector3; quaternion: Quaternion }) {
+function Controls({ position, quaternion, cabinet }: { position: Vector3; quaternion: Quaternion; cabinet: CabinetId }) {
   const slope = new Vector3(...DECK.up).normalize();
   // Deck-frame coordinates of a point given by its cabinet-space x and z.
   const at = (x: number, z: number): [number, number] => [z, (x - DECK.center[0]) / slope.x];
@@ -124,6 +201,36 @@ function Controls({ position, quaternion }: { position: Vector3; quaternion: Qua
       steel: new MeshStandardMaterial({ color: "#a9adb2", roughness: 0.35, metalness: 0.9, envMapIntensity: 1.2 }),
     };
   }, []);
+
+  const active = useArcade((s) => s.cabinet === cabinet);
+  const players = useArcade((s) => s.players);
+  const inputs = useArcade((s) => s.inputs);
+  const pads = useArcade((s) => s.pads);
+  const labels = useMemo(
+    () => (active ? ([0, 1] as const).map((p) => controlLabels(p, players, inputs, pads)) : [null, null]),
+    [active, players, inputs, pads],
+  );
+
+  const sticks = useRef<(Group | null)[]>([]);
+  const plungers = useRef<(Group | null)[]>([]);
+  useFrame((_, dt) => {
+    const on = useArcade.getState().cabinet === cabinet;
+    sticks.current.forEach((stick, p) => {
+      if (!stick) return;
+      const c = live[p];
+      // Right leans the ball toward +x of the deck, up toward +y (away from the player).
+      stick.rotation.y = MathUtils.damp(stick.rotation.y, on ? c.x * STICK_TILT : 0, 22, dt);
+      stick.rotation.x = MathUtils.damp(stick.rotation.x, on ? -c.y * STICK_TILT : 0, 22, dt);
+    });
+    plungers.current.forEach((plunger, i) => {
+      if (!plunger) return;
+      const role = BUTTON_ROLE[i];
+      const c = live[role.player];
+      const down = on && (role.start ? c.start : c.buttons[role.index]);
+      plunger.position.z = MathUtils.damp(plunger.position.z, down ? -PRESS : 0, 40, dt);
+    });
+  });
+
   return (
     <group position={position} quaternion={quaternion}>
       {STICKS.map(([x, z], player) => {
@@ -138,24 +245,35 @@ function Controls({ position, quaternion }: { position: Vector3; quaternion: Qua
             <mesh position={[0, 0, 0.0036]} rotation={upright} material={mat.rubber}>
               <cylinderGeometry args={[0.024, 0.026, 0.0026, 36]} />
             </mesh>
-            {/* Shaft cover, flaring toward the deck */}
-            <mesh position={[0, 0, 0.021]} rotation={upright} material={mat.ink} castShadow>
-              <cylinderGeometry args={[0.0095, 0.0145, 0.034, 24]} />
-            </mesh>
-            {/* Shaft */}
-            <mesh position={[0, 0, 0.046]} rotation={upright} material={mat.steel} castShadow>
-              <cylinderGeometry args={[0.0068, 0.0068, 0.03, 16]} />
-            </mesh>
-            {/* Ball top: player 1 cobalt, player 2 ivory */}
-            <mesh position={[0, 0, 0.074]} material={player === 0 ? mat.cobalt : mat.ivory} castShadow>
-              <sphereGeometry args={[0.0225, 32, 24]} />
-            </mesh>
+            {/* The lever pivots just under the deck */}
+            <group
+              ref={(g) => {
+                sticks.current[player] = g;
+              }}
+              position={[0, 0, -0.01]}
+            >
+              {/* Shaft cover, flaring toward the deck */}
+              <mesh position={[0, 0, 0.031]} rotation={upright} material={mat.ink} castShadow>
+                <cylinderGeometry args={[0.0095, 0.0145, 0.034, 24]} />
+              </mesh>
+              {/* Shaft */}
+              <mesh position={[0, 0, 0.056]} rotation={upright} material={mat.steel} castShadow>
+                <cylinderGeometry args={[0.0068, 0.0068, 0.03, 16]} />
+              </mesh>
+              {/* Ball top: player 1 cobalt, player 2 ivory */}
+              <mesh position={[0, 0, 0.084]} material={player === 0 ? mat.cobalt : mat.ivory} castShadow>
+                <sphereGeometry args={[0.0225, 32, 24]} />
+              </mesh>
+            </group>
           </group>
         );
       })}
-      {BUTTONS.map(([x, z]) => {
+      {BUTTONS.map(([x, z], i) => {
         const [u, v] = at(x, z);
         const tone = buttonTone(x, z);
+        const role = BUTTON_ROLE[i];
+        const set = labels[role.player];
+        const text = set ? (role.start ? set.start : set.buttons[role.index]) : null;
         return (
           <group key={`b${x}:${z}`} position={[u, v, 0]}>
             {/* Rim: a low collar with a rounded lip */}
@@ -166,12 +284,25 @@ function Controls({ position, quaternion }: { position: Vector3; quaternion: Qua
               <torusGeometry args={[0.0162, 0.0028, 10, 32]} />
             </mesh>
             {/* Plunger: short barrel with a convex cap */}
-            <mesh position={[0, 0, 0.0055]} rotation={upright} material={mat[tone]}>
-              <cylinderGeometry args={[0.0132, 0.0132, 0.007, 32]} />
-            </mesh>
-            <mesh position={[0, 0, 0.009]} scale={[1, 1, 0.3]} material={mat[tone]}>
-              <sphereGeometry args={[0.0132, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2]} />
-            </mesh>
+            <group
+              ref={(g) => {
+                plungers.current[i] = g;
+              }}
+            >
+              <mesh position={[0, 0, 0.0055]} rotation={upright} material={mat[tone]}>
+                <cylinderGeometry args={[0.0132, 0.0132, 0.007, 32]} />
+              </mesh>
+              <mesh position={[0, 0, 0.009]} scale={[1, 1, 0.3]} material={mat[tone]}>
+                <sphereGeometry args={[0.0132, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2]} />
+              </mesh>
+              {/* The key / controller button that works it, printed on the cap */}
+              {text && (
+                <mesh position={[0, 0, 0.0133]}>
+                  <circleGeometry args={[0.0118, 24]} />
+                  <meshBasicMaterial map={capLabel(text, tone === "ivory" ? "#101113" : "#f7f7f3")} transparent depthWrite={false} toneMapped={false} />
+                </mesh>
+              )}
+            </group>
           </group>
         );
       })}
@@ -179,7 +310,15 @@ function Controls({ position, quaternion }: { position: Vector3; quaternion: Qua
   );
 }
 
-export function ArcadeArt({ set }: { set: ArcadeArtSet }) {
+/**
+ * The screen opening in the bezel art (940 × 794 px of its 1390 × 1242
+ * canvas, 6 px above centre), in metres. The game's picture is a flat plane
+ * filling it: the model's own screen sits deep in the cabinet with stretched
+ * UVs, which distorted the picture and hid its bottom edge behind the bezel.
+ */
+const SCREEN = { width: 0.474, height: 0.401, up: 0.003 };
+
+export function ArcadeArt({ set, cabinet, screen }: { set: ArcadeArtSet; cabinet: CabinetId; screen: Texture }) {
   const [marquee, bezel, side, sideMirror] = useTexture(
     [src(set, "marquee"), src(set, "bezel"), src(set, "side"), src(set, "side-mirror")],
     configure,
@@ -197,6 +336,13 @@ export function ArcadeArt({ set }: { set: ArcadeArtSet }) {
         <planeGeometry args={[MARQUEE.width, MARQUEE.height]} />
         <meshStandardMaterial map={marquee} color={FRONT_TINT} emissiveMap={marquee} emissive="#ffffff" emissiveIntensity={0.1} roughness={0.5} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-4} />
       </mesh>
+      {/* The game's picture, just behind the bezel art */}
+      <group position={b.position} quaternion={b.quaternion}>
+        <mesh position={[0, SCREEN.up, -LIFT * 0.5]}>
+          <planeGeometry args={[SCREEN.width, SCREEN.height]} />
+          <meshBasicMaterial map={screen} color="#d6d6d6" toneMapped={false} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-2} />
+        </mesh>
+      </group>
       {/* Bezel: the art's transparent window leaves the screen showing */}
       <mesh position={b.position} quaternion={b.quaternion}>
         <planeGeometry args={[BEZEL.width, BEZEL.height]} />
@@ -220,7 +366,7 @@ export function ArcadeArt({ set }: { set: ArcadeArtSet }) {
         <planeGeometry args={[DECK.width, DECK.height]} />
         <meshStandardMaterial color="#6f747a" roughness={0.78} metalness={0.35} envMapIntensity={0.45} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-4} />
       </mesh>
-      <Controls position={steel.deck.position} quaternion={steel.deck.quaternion} />
+      <Controls position={steel.deck.position} quaternion={steel.deck.quaternion} cabinet={cabinet} />
       {/* Flanks: cut to the cabinet's silhouette by the art's alpha */}
       <mesh position={[0, SIDE.y, SIDE.z + LIFT]}>
         <planeGeometry args={[SIDE.width, SIDE.height]} />

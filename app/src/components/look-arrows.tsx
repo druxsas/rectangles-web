@@ -5,6 +5,7 @@ import { isInside, useLook } from "@/canvas/lookAround";
 import { useCheckout } from "@/stores/checkout";
 import { useListening } from "@/stores/listening";
 import { useScroll } from "@/stores/scroll";
+import { useArcade } from "@/stores/arcade";
 
 /**
  * Desktop-only edge arrows that turn the view left/right inside the store,
@@ -19,7 +20,8 @@ export function LookArrows() {
   const left = useLook((s) => s.left);
   const right = useLook((s) => s.right);
   const listening = useListening((s) => s.isOpen);
-  const visible = desktop && inside && !shopping && !listening;
+  const playing = useArcade((s) => s.cabinet !== null);
+  const visible = desktop && inside && !shopping && !listening && !playing;
 
   useEffect(() => {
     const mq = window.matchMedia("(pointer: coarse)");

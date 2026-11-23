@@ -7,6 +7,7 @@ import { setScrollLocked } from "@/components/smooth-scroll";
 import { ARROW_DEG, MAX_DEG, isInside, mouseYawDeg, pointer, useLook } from "@/canvas/lookAround";
 import { SCREEN, ZOOM_SECONDS, screenFrame } from "@/scenes/store/imacPose";
 import { DOOR_CLEAR, DOOR_PASS, KEYFRAMES } from "@/scenes/store/keyframes";
+import { CABINETS, useArcade } from "@/stores/arcade";
 import { useCheckout } from "@/stores/checkout";
 import { useListening } from "@/stores/listening";
 import { useScroll } from "@/stores/scroll";
@@ -77,6 +78,21 @@ const LISTEN_FOV = 40;
 const LISTEN_WIDE = { pos: new Vector3(4.55, 1.28, -0.8), look: new Vector3(5.63, 0.78, -0.62) };
 const LISTEN_TALL = { pos: new Vector3(4.2, 1.15, -1.0), look: new Vector3(5.63, 0.3, -1.0) };
 
+/**
+ * Arcade pose: in front of the chosen cabinet and looking down the way a
+ * player does, so the leaning screen is seen nearly square-on and the stick
+ * and buttons on the deck stay in view. The
+ * cabinet is dead centre and faced squarely, as close as it gets while the
+ * setup window on the right still clears the screen and both players'
+ * controls (it only overlaps the cabinet's edge). `z` follows
+ * the cabinet.
+ */
+const ARCADE_SECONDS = 1.2;
+const ARCADE_FOV = 40;
+const ARCADE = { x: -4.34, y: 1.92, lookX: -5.6, lookY: 1.2 };
+const arcadePos = new Vector3();
+const arcadeLook = new Vector3();
+
 /** Field of view used when looking at the iMac display. */
 const SCREEN_FOV = 34;
 /** Share of the viewport the display should fill — leaves the bezel visible. */
@@ -116,6 +132,9 @@ type RigState = {
   travelRelease: number;
   /** 0 walking → 1 close on the turntable. */
   listen: number;
+  /** 0 walking → 1 at a cabinet; `arcadeZ` glides between the two cabinets. */
+  arcade: number;
+  arcadeZ: number;
 };
 
 /** Keyframe fovs are authored for a 16:10 desktop viewport. */
@@ -234,7 +253,9 @@ function step(
 
   // --- Desktop look-around (mouse + arrows), inside the shop only
   const listening = useListening.getState().isOpen;
-  const open0 = useCheckout.getState().isOpen || listening;
+  const cabinet = useArcade.getState().cabinet;
+  const playing = cabinet !== null;
+  const open0 = useCheckout.getState().isOpen || listening || playing;
   const yawTarget =
     pointer.active && isInside(stop) && !open0
       ? MathUtils.clamp(useLook.getState().step * ARROW_DEG + mouseYawDeg(pointer.x), -MAX_DEG, MAX_DEG)
@@ -248,8 +269,8 @@ function step(
 
   // --- Shopping blend
   const open = useCheckout.getState().isOpen;
-  if ((open || listening) !== rig.locked) {
-    rig.locked = open || listening;
+  if ((open || listening || playing) !== rig.locked) {
+    rig.locked = open || listening || playing;
     setScrollLocked(rig.locked);
   }
   const target = open ? 1 : 0;
@@ -291,11 +312,26 @@ function step(
     return;
   }
 
+  // --- Arcade blend (in front of the chosen cabinet)
+  if (playing) {
+    const z = CABINETS[cabinet].z;
+    // Glide when switching cabinets; snap when arriving from the walkthrough.
+    rig.arcadeZ = rig.arcade === 0 || reducedMotion ? z : MathUtils.damp(rig.arcadeZ, z, 5, dt);
+  }
+  rig.arcade = reducedMotion
+    ? Number(playing)
+    : MathUtils.clamp(rig.arcade + Math.sign(Number(playing) - rig.arcade) * (dt / ARCADE_SECONDS), 0, 1);
+  const wa = ease(rig.arcade);
+  if (wa > 0) {
+    outPos.lerp(arcadePos.set(ARCADE.x, ARCADE.y, rig.arcadeZ), wa);
+    outLook.lerp(arcadeLook.set(ARCADE.lookX, ARCADE.lookY, rig.arcadeZ), wa);
+  }
+
   camera.position.copy(outPos);
   camera.up.copy(outUp);
   camera.lookAt(outLook);
 
-  const fov = MathUtils.lerp(MathUtils.lerp(pathFov, SCREEN_FOV, w), LISTEN_FOV, wl);
+  const fov = MathUtils.lerp(MathUtils.lerp(MathUtils.lerp(pathFov, SCREEN_FOV, w), LISTEN_FOV, wl), ARCADE_FOV, wa);
   if (Math.abs(camera.fov - fov) > 0.01) {
     camera.fov = fov;
     camera.updateProjectionMatrix();
@@ -320,6 +356,8 @@ export function CameraRig() {
     lowRes: false,
     blend: 0,
     listen: 0,
+    arcade: 0,
+    arcadeZ: 0,
     locked: false,
     yaw: 0,
     traveling: false,
